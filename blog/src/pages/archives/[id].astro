@@ -6,6 +6,7 @@ import PostList from '../../components/PostList.astro';
 import Author from '../../components/Author.astro';
 import { site, author, org } from '../../data/site';
 import { posts, related, abs } from '../../lib/posts';
+import { textbookName } from '../../lib/textbook';
 
 // 記事の頁。URL は /archives/<番号>（旧ブログのまま）。
 // 頭の大きな字はタグの英語の名前で、その o に輪が座る。読み進めるあいだ輪は左端の線を降りていき、
@@ -84,6 +85,13 @@ const jsonld = {
       </aside>
       <div class="post__main">
         <div class="entry" set:html={p.html} />
+        {p.textbook && (
+          <aside class="post__book">
+            <p class="tag"><b>Textbook</b><span>教科書</span></p>
+            <p>この話題は、教科書『{textbookName}』にまとめてあります。</p>
+            <a class="more" href={p.textbook.url}>{p.textbook.title}<span aria-hidden="true">↗</span></a>
+          </aside>
+        )}
         <p class="post__end">
           <a class="more" href={share} rel="noopener">X で共有する<span aria-hidden="true">↗</span></a>
           {tag && <a class="more" href={`/tags/${tag.slug}`}>「{tag.ja}」の記事<small>{posts.filter((q) => q.tags.includes(tag)).length}本</small><span aria-hidden="true">→</span></a>}

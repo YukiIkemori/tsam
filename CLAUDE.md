@@ -11,7 +11,9 @@
 - `blog/` が blog.tsam.co.jp。Astro。`npm run build` で `blog/dist/` に出る。旧ブログ（WordPress）の165本を 2026-11-26 に全部移した。
   URL は `blog.tsam.co.jp/archives/<番号>` の形を変えない（オーナー決定）。**本番はまだ旧ブログ。**
   Firebase のサイトは公式とは別にもう一つ要る（`firebase.json` の `tsam-blog`。これもまだ作っていない）
-- ブログは意匠の部品（輪の o・ロゴ・`global.css`・`ring.js`）を `www/src` からそのまま読む（`@www/…`）。
+- `www/startup/` が教科書「スタートアップのはじめ方」の原稿（40頁）。tsam.co.jp/startup に出る。2026-11-26 に off-notes.com/startup/ から引っ越した。
+  **off-notes 側はまだそのまま**（切り替えの日に 301 を入れる。手順は `docs/startup-move.md`）。下の「教科書」を読むこと
+- ブログは意匠の部品（輪の o・ロゴ・`global.css`・`ring.js`・書いた人の節）を `www/src` からそのまま読む（`@www/…`）。
   **www の部品を直すとブログも変わる。**直したら両方を見る。ブログだけの部品は `blog/src/styles/blog.css`
 
 ## 検証
@@ -20,8 +22,13 @@
 cd www && npm install && npm run build && npx astro preview   # http://localhost:4321/
 ```
 
-ブログは `cd blog && npm install && npm run build && npx astro preview --port 4322` のあと `node tools/verify.cjs`
-（全175頁を 390px と 1440px で開いて、横スクロール・画像切れ・リンク切れ・見出しの段飛ばし・小さい字・小さい押し場所を数える。30秒ほど）。
+公式は、上の preview を立てたまま `node tools/verify.cjs`（全44頁を 390px と 1440px で開いて、横スクロール・画像切れ・リンク切れ・
+見出しの段飛ばし・小さい字・小さい押し場所・SNS 用の画像の有無を数える。10秒ほど）。
+ブログは `cd blog && npm install && npm run build && npx astro preview --port 4322` のあと `node tools/verify.cjs`（全175頁。30秒ほど）。
+**www の部品を直したら両方流す。**
+
+`firebase.json` の URL の動き（`/startup`・`/startup/<slug>`・`/archives/<番号>`・末尾スラッシュ・301）は、
+2026-11-26 に Firebase の模擬環境（`firebase emulators:start --only hosting --project demo-tsam`）で確かめた。本番へのデプロイは未検証のまま。
 
 確認はスマホ幅（390px）から。320 / 360 / 390 / 414 / 768 / 1024 / 1280 / 1440 / 1920px で横スクロールが無いこと。
 文字は 11.5px 以上、押すものは 44px 以上。
@@ -37,6 +44,7 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - 輪の寸法は Jost の o の実測値（`global.css` の `.ring`）。**大きな欧文の書体を替えたら測り直す**
 - コーラル `#d98577` は、明るい地の上では文字に使わない（コントラスト 2.6）。輪・線・灯りと、暗い地の上だけ
 - 節の札は「Round 01 / 02 / 03」、最後のブログへの扉が「Next round」。キャッチは「Mentor to the next round.」で確定
+- 天のメニューの「Textbook」は 640px 未満では出さない（五つ並ぶと 320px で溢れる）。狭い画面の入口は、経歴の節の「Textbook」と地のリンク
 
 ## 文章の決まりごと
 
@@ -51,10 +59,32 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
   **選別はしない**（オーナー 2026-11-26「全部データ使おう。選別のほうがだるい」）。新しい活動は配列の頭に一件足すだけ。
   トップの「最近の活動」には新しい順に8件（`site.ts` の `recentCount`）、`/record` には全件が年ごとに出る。
   本文の `[文字](URL)` はリンクになる
-- **経歴・著書・会社概要**：`www/src/pages/index.astro` の中
+- **経歴・著書**：`www/src/data/person.ts`。公式の表紙・llms.txt・教科書・ブログが、ここ一か所を読む
+- **会社概要**：`www/src/pages/index.astro` の中
 - **決まった値**（メール、ブログのURL、アナリティクスのID、フォームの送信先）：`www/src/data/site.ts`
 - **OGカードとアイコン**：`cd www && node tools/og.cjs`（Playwright が要る）。キャッチやロゴを変えたときだけ
 - **見本（本番に出す前に動きごと見てもらう1ファイルの写し）**：`cd www && npm run build && python3 tools/preview.py <出力先のフォルダ>`
+
+## 教科書（tsam.co.jp/startup）
+
+オーナーの講座テキストを「検索される問い一つにつき一頁」に組み直したもの。**検索と AI の要約から読まれること**が一番の目的（オーナー 2026-11-14）。
+目次（`/startup`）＋38頁（`/startup/<slug>`）＋用語集（`/startup/glossary`）。
+
+- **原稿は `www/startup/pages/NN-slug.md`**。書式は `www/src/lib/startup.ts` の頭。文体は「である」調で、**答えを冒頭に置く**（`lead`）
+- **原稿に無い事実・数字を足さない。第三者のサービス名・会社名は出さない**（「家事代行のマッチングサービス」のように一般化。架空の事例「セラート」だけは教科書のまま）
+- **slug は変えない**（検索に載っている。off-notes からの 301 も slug で対になっている）
+- **直したら頭の欄の `mod:` を今日にする**（sitemap の lastmod と構造化データの dateModified がここから出る。無い頁は引っ越し前の最終更新日 2026-11-20）
+- build が止めるもの：title 30全角超、description 90〜125全角の外、行き先の無い内部リンク、ほかの頁の本文・関連から線が来ていない頁
+- **頁を足すとき**：`pages/NN-slug.md` を足し、近い頁の `related` と本文から線を張り、用語があれば `glossary.md` に足す。
+  目次の title の「全40頁」を直す。`cd www && node tools/og-startup.cjs` で SNS 用の画像を作る（流し忘れると `tools/verify.cjs` が出す）
+- 意匠：区分は八つで、札は「Round 01〜08」。頁の頭に区分の語（Intro・Money・Concept・Proof・Model・Growth・Story・Beyond。`startup.ts` の `rounds`）が大きく出て、
+  その o に輪が座る。右肩の八つの灯りが、いま何ラウンド目か。読み終わりは「Next round」（次の頁）。**全頁同じ顔**（教科書なので変えない）。部品は `www/src/styles/startup.css`
+- 構造化データは Article・BreadcrumbList と、**頁に見えている「よくある質問」をそのまま写した FAQPage**（原稿の `?? 問い`）。用語集は DefinedTermSet。
+  公式の表紙で FAQPage を使わないのは「本文に無い問いを作ることになる」からで、ここは本文にある問いなので使っている
+- **旧ブログとの関係**（オーナー了承 2026-11-26）：旧ブログの3本（3676 バイアウト・3638 Why you・4960 ディスラプト）は検索の主役なので、教科書はその語を狙わず、
+  37・36・22 からリンクで渡している。**37 の kw に「バイアウト 意味」を戻さない。**ほかの重複は教科書が主役で、旧ブログの33本の終わりに教科書への線が一本出る
+  （`blog/posts/<番号>.html` の頭の欄 `textbook: <slug>`。本文には触れていない）。教科書と旧ブログのあいだに 301 は張らない
+- 引っ越しのときに原稿を変えたところと、off-notes 側の 301 の手順は `docs/startup-move.md`
 
 ## ブログの更新のしかた
 
@@ -62,13 +92,14 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
   頭の欄は `title`・`date`（`2026-12-01T09:00:00+09:00` の形）・`tags`（`[columns]` のように一つ）。本文は Markdown。
   画像は `blog/public/images/<番号>/` に置いて `![説明](/images/<番号>/01.webp)`。
   任意の欄：`modified`（直した日）、`description`（検索結果の説明文。無ければ書き出しから自動）、`image`（SNS 用の画像）、
-  `related`（関連記事の番号。無ければ同じタグの新しい記事）、`author: org`（寄稿。書き手を代表本人にしない）
+  `related`（関連記事の番号。無ければ同じタグの新しい記事）、`author: org`（寄稿。書き手を代表本人にしない）、
+  `textbook`（同じ主題の教科書の頁の slug。記事の終わりに、その頁への線が一本出る）
 - **旧ブログから移した記事**（`blog/posts/<番号>.html`）は本文が HTML のまま。**文章には触れていない。**
   移すときに変えたことは `blog/tools/import_wp.py` の頭に書いてある（画像の置き直し、記事どうしのリンク、見出しを h2 始まりに、など）。
   このスクリプトは一度きりの道具で、もう流さない
 - **記事を直したら `modified` を直す**（sitemap の lastmod と構造化データの dateModified がここから出る）
 - **タグ**は `blog/src/data/site.ts` の `tags`。`en` は頁の大きな見出しで、o のある語にする（「|」の位置の o が輪になる）
-- **書いた人・著書**は `blog/src/data/site.ts`。公式サイト（`www/src/pages/index.astro`）と同じ事実なので、**片方を直したらもう片方も直す**
+- **書いた人・著書**は公式サイトと同じ一か所（`www/src/data/person.ts`）を読む。直すのは向こう
 - 旧ブログから**引き継がなかったもの**：コメント（26件あった。オーナー 2026-11-26「コメントは消して」。投稿フォームも無い）、
   Featured articles（完全食COMPの記事をトップで特別に見せる枠。オーナー同日「特別扱いはしなくてよい」。記事そのものは残っている）、
   Community（Stoked capital）と講演実績一例（公式サイトで載せないと決めたものに合わせた）、
@@ -86,8 +117,8 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - 大きな見出しの h2 は「会社概要 Company」のように日本語の名前を中に持つ（並びは CSS でほどいている）
 - `/llms.txt` は `src/pages/llms.txt.ts` が作る。手で書かない。経歴や会社概要を直したら、ここも同じ事実になっているか見る
 - `/record`（活動の記録）は Event を使わず、CollectionPage とパンくずだけ（Event は場所などの必須項目を満たせない）
-- 頁を足したら `public/sitemap.xml` と `llms.txt.ts` の「頁」に足す
-- `sitemap.xml` に lastmod は書いていない（手で書くと直すたびに嘘になるため）
+- 頁を足したら `src/pages/sitemap.xml.ts` の `fixed` と `llms.txt.ts` の「頁」に足す（教科書の頁は原稿から自動で入る）
+- `sitemap.xml` の lastmod は教科書の頁だけ（原稿の `mod`）。ほかの頁には書いていない（手で書くと直すたびに嘘になるため）
 - 一番効くのはブログ165本。記事ごとに BlogPosting とパンくず、canonical（`blog.tsam.co.jp/archives/<番号>`）を入れてある。
   記事の title は題そのまま（30全角を超えるものもあるが、題は変えない）。description は本文の書き出しから 120 字まで（`blog/src/lib/posts.ts`）
 

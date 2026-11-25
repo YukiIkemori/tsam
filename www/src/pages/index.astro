@@ -3,48 +3,16 @@ import Base from '../layouts/Base.astro';
 import O from '../components/O.astro';
 import ContactForm from '../components/ContactForm.astro';
 import { site } from '../data/site';
+import { years, books } from '../data/person';
 import { all, recent } from '../data/activities';
+import { pages as tbPages, NAME as tbName } from '../lib/startup';
 import { inline } from '../scripts/inline';
 
 // 最近の活動は、新しい順に頭の数件（site.recentCount）。全件は /record。
 const ymd = (d: string) => d.replaceAll('-', '.');
 
-const years = [
-  ['2005', 'オンラインゲームデータオークションサイト運営の株式会社ポケットを設立。2014年に売却。'],
-  ['2011', 'ソーシャル婚活サイト運営の株式会社フリッグを設立。2013年に売却。'],
-  ['2019', 'スタートアップ支援を目的とした株式会社tsamを設立。行政・地方自治体・大学機関と連携し、スタートアップカリキュラムを提供。'],
-  ['2020', '情報経営イノベーション専門職大学客員教授に就任。'],
-  ['2022', 'ベンチャーキャピタルStoked Capitalを設立。'],
-  ['2023', '独立行政法人中小企業基盤整備機構アドバイザーに就任。'],
-  ['2026', '信州大学特任教授に就任。'],
-];
-
-// 著書。出版日と出版社は旧サイトの News（2023-07-05、2024-06-22）とブログの案内文から。
-// isbn は Amazon の商品番号（書籍は ISBN-10 と同じ）。
-const books = [
-  {
-    title: 'デジタル人材のシン・キャリアガイド',
-    sub: 'スタートアップの始め方',
-    full: 'デジタル人材のシン・キャリアガイド―スタートアップの始め方',
-    role: '著',
-    date: '2023-07-05',
-    publisher: 'ぱる出版',
-    isbn: '482721378X',
-    body: 'ITビジネスパーソンになるために知っておくこと、成功するためのキャリアガイド。経産省、自治体と連携し、デジタル人材の発掘、起業と成功率向上をサポートする著者がまとめた業界の最新必要情報が詰まった1冊。',
-    href: 'https://www.amazon.co.jp/dp/482721378X',
-  },
-  {
-    title: '図解・ビジネスモデルで学ぶスタートアップ',
-    sub: '監修',
-    full: '図解・ビジネスモデルで学ぶスタートアップ',
-    role: '監修',
-    date: '2024-06-22',
-    publisher: '日本能率協会マネジメントセンター',
-    isbn: '4800592364',
-    body: 'スタートアップに興味のある若者へ、多様なビジネスモデルを、イラスト、図解、会話形式で解説。スタートアップの基本を学ぶ、理解を深める一冊。',
-    href: 'https://www.amazon.co.jp/dp/4800592364',
-  },
-];
+// 教科書（/startup）への入口。文は教科書の目次の説明文にあるものだけ。
+const textbook = { name: tbName, lead: 'スタートアップの起業を、問い一つにつき一頁で学べる教科書です。起業の基本、会社設立と資本政策、アイデア、検証、ビジネスモデル、成長、ピッチ、Exitまで。', total: tbPages.length + 2 };
 
 // title は30全角以内、description は90〜125全角。どちらも頁に見えている事実だけで書く。
 const title = '株式会社tsam（ツァム）｜スタートアップ支援・代表 池森裕毅';
@@ -201,6 +169,15 @@ const jsonld = {
           </li>
         ))}
       </ul>
+    </div>
+
+    <div class="split split--sub" id="textbook">
+      <h3 class="sub rv"><span class="display">Textbook</span><small>教科書</small></h3>
+      <div class="tbdoor rv">
+        <p class="tbdoor__title">{textbook.name}</p>
+        <p>{textbook.lead}</p>
+        <a class="more" href="/startup">教科書を読む<small>全{textbook.total}頁</small><span aria-hidden="true">→</span></a>
+      </div>
     </div>
 
     <div class="split split--sub" id="recent">

@@ -1,0 +1,145 @@
+---
+import Base from '../../layouts/Base.astro';
+import O from '../../components/O.astro';
+import Word from '../../components/Word.astro';
+import Lamps from '../../components/startup/Lamps.astro';
+import Rows from '../../components/startup/Rows.astro';
+import About from '../../components/startup/About.astro';
+import '../../styles/startup.css';
+import { site } from '../../data/site';
+import { person, org } from '../../data/person';
+import { pages, bySlug, glossary, no, jaDate, NAME, BASE, PUBLISHED } from '../../lib/startup';
+
+// 教科書の頁。URL は /startup/<slug>（off-notes.com/startup/<slug>/ から引っ越した。slug は変えない）。
+// 頭の大きな字は区分の語（Round 05 なら Model）で、その o に輪が座る。読み進めるあいだ輪は左端の線を降りていき、
+// 読み終わりの「Next round」（次の頁）の o に着く。
+export function getStaticPaths() {
+  return pages.map((p) => ({ params: { slug: p.slug }, props: { p } }));
+}
+const { p } = Astro.props;
+const r = p.round;
+const k = pages.indexOf(p);
+const prev = k > 0 ? pages[k - 1] : null;
+const next = k + 1 < pages.length ? pages[k + 1] : null;
+const related = p.related.map((s) => bySlug.get(s)!);
+const url = `${site.url}${p.url}`;
+const image = `${BASE}/og/${p.slug}.jpg`;
+
+// 題は「MVPとは。意味と作り方、よくある誤解」のように、問いと中身が「。」で分かれている。最初の「。」までを大きく出す
+const cut = p.h1.indexOf('。');
+const [ha, hb] = cut > 0 ? [p.h1.slice(0, cut + 1), p.h1.slice(cut + 1)] : [p.h1, ''];
+
+// 構造化データ。**本文に無い事実は書かない。**FAQPage は、頁に見えている「よくある質問」をそのまま写したものだけ。
+const shelf = `${site.url}${BASE}`;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      '@id': `${url}#article`,
+      mainEntityOfPage: url,
+      url,
+      headline: p.title,
+      alternativeHeadline: p.h1,
+      description: p.desc,
+      inLanguage: 'ja',
+      datePublished: PUBLISHED,
+      dateModified: p.mod,
+      author: { '@type': 'Person', '@id': person.id, name: person.name, url: person.url },
+      publisher: { '@type': 'Organization', '@id': org.id, name: org.name, url: org.url, logo: { '@type': 'ImageObject', url: org.logo } },
+      image: [`${site.url}${image}`],
+      articleSection: r.ja,
+      keywords: p.kw,
+      isPartOf: { '@type': 'CollectionPage', '@id': `${shelf}#webpage`, name: NAME, url: shelf },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '株式会社tsam', item: `${site.url}/` },
+        { '@type': 'ListItem', position: 2, name: NAME, item: shelf },
+        { '@type': 'ListItem', position: 3, name: p.h1, item: url },
+      ],
+    },
+    ...(p.faq.length
+      ? [{
+          '@type': 'FAQPage',
+          '@id': `${url}#faq`,
+          mainEntity: p.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+        }]
+      : []),
+  ],
+};
+---
+<Base title={p.title} description={p.desc} path={p.url} jsonld={jsonld} image={image} imageAlt={`${p.h1}（${NAME}）`} article={{ published: `${PUBLISHED}T10:00:00+09:00`, modified: `${p.mod}T10:00:00+09:00`, section: r.ja }}>
+  <article class="tb">
+    <header>
+      <p class="tb-word display"><a href={`${BASE}#r${r.n}`} aria-label={`Round ${no(r.n)} ${r.ja}の頁の一覧`}><Word word={r.en} /></a></p>
+      <div class="tb-bar">
+        <nav class="tag tb-crumb" aria-label="現在地">
+          <a href={BASE}>Textbook</a><i aria-hidden="true">/</i><a href={`${BASE}#r${r.n}`}><b>Round {no(r.n)}</b></a><span>{r.ja}</span>
+        </nav>
+        <Lamps n={r.n} />
+      </div>
+      <h1 class="tb-title"><span>{ha}</span>{hb && <span class="tb-title__b">{hb}</span>}</h1>
+    </header>
+
+    <div class="split tb-cols">
+      <aside class="tb-side">
+        <p class="tb-side__by"><small>書いた人</small><a href="#author">{person.name}</a>（信州大学 特任教授）</p>
+        <p><small>更新</small><time datetime={p.mod}>{jaDate(p.mod)}</time></p>
+        <details class="tb-toc">
+          <summary>この頁の内容</summary>
+          <ol>
+            {p.toc.map((h) => <li><a href={`#${h.id}`}><span>{h.text}</span></a></li>)}
+          </ol>
+        </details>
+      </aside>
+      <div class="tb-main">
+        <p class="tb-lead" set:html={p.lead} />
+        <section class="tb-points" aria-label="この頁の要点">
+          <p class="tag"><b>Points</b><span>この頁の要点</span></p>
+          <ul>
+            {p.points.map((x) => <li set:html={x} />)}
+          </ul>
+        </section>
+        <div class="tb-text" set:html={p.html} />
+        <p class="tb-end">
+          <a class="more" href={BASE}>目次<small>全{pages.length + 2}頁</small><span aria-hidden="true">→</span></a>
+          <a class="more" href={glossary.url}>用語集<small>{glossary.terms.length}語</small><span aria-hidden="true">→</span></a>
+        </p>
+      </div>
+    </div>
+  </article>
+
+  <section class="sec sec--paper" id="next">
+    <div class="sec__head">
+      <p class="tag sec__round"><b>{next ? `Round ${no(next.round.n)}` : 'Glossary'}</b></p>
+      <Lamps n={next ? next.round.n : 8} />
+      <h2><span class="sec__ja">次の頁</span> <span class="display">Next r<O />und</span></h2>
+    </div>
+    {next ? (
+      <a class="tb-next" href={next.url}>
+        <span class="tag"><b>{no(k + 2)}</b><span>{next.round.ja}</span></span>
+        <span class="tb-next__title">{next.h1}</span>
+        <span class="tb-next__go" aria-hidden="true">→</span>
+      </a>
+    ) : (
+      <a class="tb-next" href={glossary.url}>
+        <span class="tag"><b>A–Z</b><span>{glossary.terms.length}語</span></span>
+        <span class="tb-next__title">{glossary.h1}</span>
+        <span class="tb-next__go" aria-hidden="true">→</span>
+      </a>
+    )}
+    <div class="split tb-rel">
+      <h3 class="sub rv"><span class="display">Related</span><small>あわせて読む</small></h3>
+      <Rows items={related} tag />
+    </div>
+    <p class="tb-nav">
+      {prev ? <a class="more" href={prev.url}><span aria-hidden="true">←</span>前の頁</a> : <span></span>}
+      <a class="more" href={BASE}>{NAME} 目次<span aria-hidden="true">→</span></a>
+    </p>
+  </section>
+
+  <About />
+  <script is:inline>if (matchMedia('(min-width: 900px)').matches) document.querySelector('.tb-toc').open = true;</script>
+</Base>

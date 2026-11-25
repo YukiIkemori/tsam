@@ -3,13 +3,14 @@
 //   posts/<番号>.html … 旧ブログ（WordPress）から移した記事。本文は HTML のまま
 //   posts/<番号>.md   … これから書く記事。本文は Markdown
 //
-// どちらも頭に --- で挟んだ欄を持つ（title・date・modified・tags・image・related・description・author）。
+// どちらも頭に --- で挟んだ欄を持つ（title・date・modified・tags・image・related・description・author・textbook）。
 // 番号がそのまま URL（/archives/<番号>）になる。新しい記事は、いちばん大きい番号の次を使う。
 import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 import { tags as tagDefs, site } from '../data/site';
+import { textbookPage } from './textbook';
 
 export type Tag = (typeof tagDefs)[number];
 export type Post = {
@@ -30,6 +31,7 @@ export type Post = {
   toc: { id: string; text: string }[];
   relatedIds: number[];
   hasTweet: boolean;
+  textbook?: { url: string; title: string }; // 同じ主題の、教科書（tsam.co.jp/startup）の頁
 };
 
 const DIR = path.join(process.cwd(), 'posts');
@@ -106,6 +108,7 @@ function load(): Post[] {
       toc: toc.length >= 3 ? toc : [],
       relatedIds: data.related ?? [],
       hasTweet: html.includes('twitter-tweet'),
+      textbook: data.textbook ? textbookPage(String(data.textbook), `posts/${file}`) : undefined,
     });
   }
   return list.sort((a, b) => (a.date < b.date ? 1 : -1));

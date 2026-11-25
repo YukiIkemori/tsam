@@ -1,0 +1,29 @@
+---
+// 書いた人。教科書（/startup）とブログの頁の終わりに出る暗い節。事実は src/data/person.ts（公式の「代表の経歴」と同じもの）。
+// local は公式サイトの中から呼ぶとき（経歴への線を同じサイトの中の線にする）。中に書いたものは、経歴の文のあとに出る。
+import O from './O.astro';
+import { person, books } from '../data/person';
+const { local = false } = Astro.props;
+---
+<section class="sec sec--dark" id="author">
+  <div class="sec__head">
+    <p class="tag sec__round"><b>Written by</b></p>
+    <h2><span class="sec__ja">書いた人</span> <span class="display">Auth<O />r</span></h2>
+  </div>
+  <div class="split">
+    <div class="who rv">
+      <p class="who__name">{person.name}<span class="display" lang="en">{person.latin}</span></p>
+      <p class="who__role">{person.role}</p>
+      <a class="more" href={local ? '/#background' : person.url}>経歴を見る<span aria-hidden="true">{local ? '→' : '↗'}</span></a>
+    </div>
+    <div class="abio rv">
+      {person.bio.map((b) => <p>{b}</p>)}
+      <slot />
+      <ul class="abooks">
+        {books.map((b) => (
+          <li><a href={b.href} rel="noopener"><span class="abooks__meta">{b.date.slice(0, 4)} ／ {b.publisher} ／ {b.role}</span><span class="abooks__title">{b.full}</span><span class="abooks__go" aria-hidden="true">↗</span></a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>

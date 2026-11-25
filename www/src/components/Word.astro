@@ -1,0 +1,7 @@
+---
+// 「C|ncept」のように「|」で o の位置を示した語を、輪の o 付きで出す。
+import O from './O.astro';
+const { word, hero = false } = Astro.props;
+const [a, b] = String(word).split('|');
+---
+{a}<O hero={hero} />{b}

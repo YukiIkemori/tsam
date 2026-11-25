@@ -73,6 +73,7 @@ Gmail の「他のアドレスから送信」で、SMTP サーバーに `tsam.co
 4. 既存の TXT（SPF・Search Console・OpenAI）は消さない
 5. 証明書が出るまで待ち、`https://tsam.co.jp/` `https://blog.tsam.co.jp/archives/<番号>` が開くことを確かめる
 6. もう一度、手順 3 の送受信テストをやる
+7. `https://tsam.co.jp/startup/mvp` が開くのを確かめてから、off-notes.com 側に教科書の 301 を入れる（`docs/startup-move.md`。**順番を逆にしない**）
 
 ### 戻し方
 サイトがおかしければ、`tsam.co.jp` の A を `160.16.226.77` に、`blog.tsam.co.jp` を元の CNAME に戻す。さくらのサーバーは止めないので、戻せば元のサイトが出る。

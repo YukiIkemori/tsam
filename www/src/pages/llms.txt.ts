@@ -3,6 +3,7 @@
 import type { APIRoute } from 'astro';
 import { site } from '../data/site';
 import { all, recent, firstYear, lastYear } from '../data/activities';
+import { pages, rounds, inRound, index, glossary, NAME, BASE } from '../lib/startup';
 
 const strip = (s: string) => s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '$1');
 
@@ -48,9 +49,20 @@ export const GET: APIRoute = () => {
 
 ${recent.map((a) => `- ${a.date}: ${a.title}。${strip(a.body)}`).join('\n')}
 
+## 教科書「${NAME}」
+
+${index.desc} 全${pages.length + 2}頁。どの頁も、冒頭に答えを置いてある。目次は ${site.url}${BASE}
+
+${rounds.map((r) => `### ${r.ja}\n\n${inRound(r).map((p) => `- [${p.h1}](${site.url}${p.url}): ${p.blurb}`).join('\n')}`).join('\n\n')}
+
+### 用語集
+
+- [${glossary.h1}](${site.url}${glossary.url}): ${glossary.terms.length}語を一行ずつ
+
 ## 頁
 
 - [トップ（会社概要・経歴・お問い合わせ）](${site.url}/)
+- [教科書「${NAME}」（全${pages.length + 2}頁）](${site.url}${BASE})
 - [活動の記録（講演・審査員・メディア掲載。全${all.length}件）](${site.url}/record)
 - [プライバシーポリシー](${site.url}/pages/privacy-policy)
 - [ブログ（スタートアップ概論、投資家視点、ノウハウ、コラム）](${site.blog})

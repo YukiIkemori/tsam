@@ -1,5 +1,6 @@
+import { person, org as wwwOrg, books as wwwBooks } from '@www/data/person';
+
 // ブログ全体で使う決まった値。
-// 著者と著書の事実は公式サイト（www/src/pages/index.astro）と同じもの。**向こうを直したら、ここも直す。**
 export const site = {
   name: 'tsam.blog',
   url: 'https://blog.tsam.co.jp',
@@ -30,26 +31,7 @@ export const tags = [
   { slug: 'others', ja: 'その他', en: 'N|tes' },
 ];
 
-export const author = {
-  id: 'https://tsam.co.jp/#ikemori',
-  name: '池森裕毅',
-  latin: 'Yuki Ikemori',
-  role: '株式会社tsam 代表取締役',
-  url: 'https://tsam.co.jp/#background',
-  bio: [
-    '1980年生まれ、千葉県松戸市出身。東京理科大学中退後、起業家として活動開始。',
-    '現在は、信州大学特任教授として教育現場に携わる傍ら、後進の起業家育成に従事。',
-  ],
-};
-
-export const org = {
-  id: 'https://tsam.co.jp/#org',
-  name: '株式会社tsam',
-  url: 'https://tsam.co.jp/',
-  logo: 'https://tsam.co.jp/apple-touch-icon.png',
-};
-
-export const books = [
-  { title: 'デジタル人材のシン・キャリアガイド―スタートアップの始め方', role: '著', year: '2023', publisher: 'ぱる出版', href: 'https://www.amazon.co.jp/dp/482721378X' },
-  { title: '図解・ビジネスモデルで学ぶスタートアップ', role: '監修', year: '2024', publisher: '日本能率協会マネジメントセンター', href: 'https://www.amazon.co.jp/dp/4800592364' },
-];
+// 書いた人・会社・著書は、公式サイトと同じ一か所（www/src/data/person.ts）から読む。直すのは向こう。
+export const author = person;
+export const org = wwwOrg;
+export const books = wwwBooks.map((b) => ({ title: b.full, role: b.role, year: b.date.slice(0, 4), publisher: b.publisher, href: b.href }));

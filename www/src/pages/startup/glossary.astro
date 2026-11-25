@@ -1,0 +1,82 @@
+---
+import Base from '../../layouts/Base.astro';
+import O from '../../components/O.astro';
+import About from '../../components/startup/About.astro';
+import '../../styles/startup.css';
+import { site } from '../../data/site';
+import { person, org } from '../../data/person';
+import { glossary as g, inline, plain, jaDate, NAME, BASE, PUBLISHED } from '../../lib/startup';
+
+// 用語集。原稿は startup/glossary.md（一行が一語）。語ごとに、詳しい頁へ線を張る。
+const url = `${site.url}${g.url}`;
+const shelf = `${site.url}${BASE}`;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${url}#webpage`,
+      url,
+      name: g.title,
+      headline: g.h1,
+      description: g.desc,
+      inLanguage: 'ja',
+      datePublished: PUBLISHED,
+      dateModified: g.mod,
+      author: { '@type': 'Person', '@id': person.id, name: person.name, url: person.url },
+      publisher: { '@type': 'Organization', '@id': org.id, name: org.name, url: org.url },
+      isPartOf: { '@type': 'CollectionPage', '@id': `${shelf}#webpage`, name: NAME, url: shelf },
+      mainEntity: { '@id': `${url}#terms` },
+    },
+    {
+      '@type': 'DefinedTermSet',
+      '@id': `${url}#terms`,
+      name: g.h1,
+      description: g.desc,
+      inLanguage: 'ja',
+      hasDefinedTerm: g.terms.map((t) => ({
+        '@type': 'DefinedTerm',
+        '@id': `${url}#${t.id}`,
+        name: t.term,
+        ...(t.alt ? { alternateName: t.alt.split('、').map((a) => a.trim()) } : {}),
+        description: plain(t.def),
+        inDefinedTermSet: { '@id': `${url}#terms` },
+        url: `${site.url}${t.page.url}`,
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: '株式会社tsam', item: `${site.url}/` },
+        { '@type': 'ListItem', position: 2, name: NAME, item: shelf },
+        { '@type': 'ListItem', position: 3, name: g.h1, item: url },
+      ],
+    },
+  ],
+};
+---
+<Base title={g.title} description={g.desc} path={g.url} jsonld={jsonld} image={`${BASE}/og/glossary.jpg`} imageAlt={`${g.h1}（${NAME}）`} article={{ published: `${PUBLISHED}T10:00:00+09:00`, modified: `${g.mod}T10:00:00+09:00` }}>
+  <article class="sec record">
+    <header class="sec__head">
+      <nav class="tag tb-crumb sec__round" aria-label="現在地"><a href={BASE}>Textbook</a><i aria-hidden="true">/</i><b>A–Z</b></nav>
+      <span class="record__count">{g.terms.length}語</span>
+      <h1><span class="sec__ja">{g.h1}</span> <span class="display">Gl<O />ssary</span></h1>
+    </header>
+
+    <p class="record__lead">{g.lead}</p>
+    <p class="tb-by"><a href="#author">{person.name}</a>（信州大学 特任教授）　<time datetime={g.mod}>{jaDate(g.mod)} 更新</time></p>
+
+    <dl class="tb-terms">
+      {g.terms.map((t) => (
+        <div id={t.id}>
+          <dt>{t.term}{t.alt && <small>{t.alt}</small>}</dt>
+          <dd><span set:html={inline(t.def)} /><a class="tb-terms__more" href={t.page.url}>{t.page.h1}<span aria-hidden="true">→</span></a></dd>
+        </div>
+      ))}
+    </dl>
+
+    <a class="back" href={BASE}>← {NAME} 目次</a>
+  </article>
+
+  <About />
+</Base>

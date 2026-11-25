@@ -1,7 +1,6 @@
 ---
-// 「C|lumns」のように「|」で o の位置を示した語を、輪の o 付きで出す。
-import O from '@www/components/O.astro';
+// 「C|lumns」のように「|」で o の位置を示した語を、輪の o 付きで出す。部品は公式サイトの側にある。
+import Word from '@www/components/Word.astro';
 const { word, hero = false } = Astro.props;
-const [a, b] = String(word).split('|');
 ---
-{a}<O hero={hero} />{b}
+<Word word={word} hero={hero} />

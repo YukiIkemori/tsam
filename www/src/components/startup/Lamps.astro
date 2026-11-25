@@ -1,0 +1,6 @@
+---
+// 八つの灯り。いま何ラウンド目か（済んだぶんが灯る）。飾りなので読み上げない。
+import { rounds } from '../../lib/startup';
+const { n } = Astro.props;
+---
+<span class="lamps lamps--8" aria-hidden="true">{rounds.map((r) => <i class={r.n <= n ? 'on' : ''}></i>)}</span>

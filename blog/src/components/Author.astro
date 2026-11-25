@@ -1,26 +1,5 @@
 ---
-// 書いた人。事実は公式サイトの「代表の経歴」と同じもの（src/data/site.ts）。
-import O from '@www/components/O.astro';
-import { author, books } from '../data/site';
+// 書いた人。部品は公式サイトの側にある（教科書の頁と同じもの）。
+import Author from '@www/components/Author.astro';
 ---
-<section class="sec sec--dark" id="author">
-  <div class="sec__head">
-    <p class="tag sec__round"><b>Written by</b></p>
-    <h2><span class="sec__ja">書いた人</span> <span class="display">Auth<O />r</span></h2>
-  </div>
-  <div class="split">
-    <div class="who rv">
-      <p class="who__name">{author.name}<span class="display" lang="en">{author.latin}</span></p>
-      <p class="who__role">{author.role}</p>
-      <a class="more" href={author.url}>経歴を見る<span aria-hidden="true">↗</span></a>
-    </div>
-    <div class="abio rv">
-      {author.bio.map((b) => <p>{b}</p>)}
-      <ul class="abooks">
-        {books.map((b) => (
-          <li><a href={b.href} rel="noopener"><span class="abooks__meta">{b.year} ／ {b.publisher} ／ {b.role}</span><span class="abooks__title">{b.title}</span><span class="abooks__go" aria-hidden="true">↗</span></a></li>
-        ))}
-      </ul>
-    </div>
-  </div>
-</section>
+<Author />
