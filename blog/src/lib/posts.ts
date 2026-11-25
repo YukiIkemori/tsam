@@ -10,10 +10,8 @@ import path from 'node:path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 import { tags as tagDefs, site } from '../data/site';
-import commentData from '../data/comments.json';
 
 export type Tag = (typeof tagDefs)[number];
-export type Comment = { id: number; post: number; parent: number; name: string; date: string; html: string };
 export type Post = {
   id: number;
   url: string;
@@ -31,7 +29,6 @@ export type Post = {
   og?: string;
   toc: { id: string; text: string }[];
   relatedIds: number[];
-  comments: Comment[];
   hasTweet: boolean;
 };
 
@@ -66,7 +63,6 @@ function describe(html: string) {
 }
 
 function load(): Post[] {
-  const comments = commentData as Comment[];
   const list: Post[] = [];
   for (const file of fs.readdirSync(DIR)) {
     const m = file.match(/^(\d+)\.(html|md)$/);
@@ -109,7 +105,6 @@ function load(): Post[] {
       og: data.image,
       toc: toc.length >= 3 ? toc : [],
       relatedIds: data.related ?? [],
-      comments: comments.filter((c) => c.post === id),
       hasTweet: html.includes('twitter-tweet'),
     });
   }

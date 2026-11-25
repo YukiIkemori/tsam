@@ -7,14 +7,12 @@
 
 ダンプのフォルダに要るもの（旧サイトが生きているうちに取ったもの）:
   posts.json     https://tsam.co.jp/wp-json/wp/v2/posts?_embed&per_page=100 を全頁つないだ配列
-  comments.json  https://tsam.co.jp/wp-json/wp/v2/comments?per_page=100
   related/<id>.json  https://tsam.co.jp/wp-json/yarpp/v1/related/<id>?category=Blog（関連記事）
   dl/            記事の画像の実物と manifest.json（元URL → ファイル）
 
 出すもの:
   posts/<番号>.html          記事。頭に ---（題・日付・タグ・関連記事）、その下は本文の HTML
   public/images/<番号>/      記事の画像（WebP、長辺1600pxまで）。og.jpg はアイキャッチ（SNS用）
-  src/data/comments.json     コメント（公開されていたものだけ。メールアドレスは持っていない）
 
 本文について変えたこと（文章には触れていない）:
   ・画像を自前に置き直した（旧サーバーと Google ドキュメントの一時URLに置かれていたため、放っておくと切れる）
@@ -22,6 +20,8 @@
   ・本文の見出しを h2 始まりに揃えた（h1 は記事の題だけ。WordPress では本文に h1 を使っている記事があった）
   ・WordPress のエディタが付けた飾りの class、<!--more-->、空のアンカー、Amazon の計測用の透明画像（1件）を外した
   ・X（Twitter）の埋め込みの <script> は外した（記事の頁が一度だけ読み込む）
+
+移さなかったもの：コメント（旧ブログに26件。オーナー 2026-11-26「コメントは消して」）。最初は移していたが、外した。
 """
 import base64, html, io, json, os, re, sys
 from bs4 import BeautifulSoup, Comment
@@ -168,17 +168,4 @@ for p in posts:
         f.write('\n'.join(fm) + '\n\n' + body + '\n')
     count['posts'] += 1
 
-# コメント
-ids = {p['id'] for p in posts}
-comments = []
-for c in json.load(open(f'{D}/comments.json')):
-    if c['post'] not in ids or c.get('status', 'approved') != 'approved':
-        continue
-    comments.append({
-        'id': c['id'], 'post': c['post'], 'parent': c['parent'], 'name': c['author_name'],
-        'date': jst(c['date']), 'html': c['content']['rendered'].strip(),
-    })
-comments.sort(key=lambda c: (c['post'], c['date']))
-with open(f'{ROOT}/src/data/comments.json', 'w') as f:
-    f.write('[\n' + ',\n'.join(json.dumps(c, ensure_ascii=False) for c in comments) + '\n]\n')
-print(count, len(comments), 'comments')
+print(count)

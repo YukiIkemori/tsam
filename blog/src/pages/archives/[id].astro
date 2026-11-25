@@ -5,7 +5,7 @@ import Word from '../../components/Word.astro';
 import PostList from '../../components/PostList.astro';
 import Author from '../../components/Author.astro';
 import { site, author, org } from '../../data/site';
-import { posts, related, abs, type Comment } from '../../lib/posts';
+import { posts, related, abs } from '../../lib/posts';
 
 // 記事の頁。URL は /archives/<番号>（旧ブログのまま）。
 // 頭の大きな字はタグの英語の名前で、その o に輪が座る。読み進めるあいだ輪は左端の線を降りていき、
@@ -20,11 +20,6 @@ const next = related(p);
 const updated = p.modified.slice(0, 10) > p.date.slice(0, 10) ? p.modified.slice(0, 10).replaceAll('-', '.') : null;
 const url = abs(p.url);
 const share = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(p.title)}`;
-
-// コメントは旧ブログに付いていたものをそのまま残す（新しくは受け付けない）。返信は親の下に下げる。
-const tops = p.comments.filter((c) => !c.parent || !p.comments.some((x) => x.id === c.parent));
-const kids = (c: Comment): Comment[] => p.comments.filter((x) => x.parent === c.id).flatMap((x) => [x, ...kids(x)]);
-const cdate = (c: Comment) => c.date.slice(0, 10).replaceAll('-', '.');
 
 // 構造化データ。本文に無い事実は書かない。Review・FAQPage などは使わない。
 // 寄稿の記事は、書き手を代表本人にしない（会社の名前で出す）。
@@ -50,7 +45,6 @@ const jsonld = {
       image: images.length ? images : [abs('/ogp.jpg')],
       ...(tag ? { articleSection: tag.ja } : {}),
       isPartOf: { '@id': `${site.url}/#blog` },
-      ...(p.comments.length ? { commentCount: p.comments.length } : {}),
     },
     {
       '@type': 'BreadcrumbList',
@@ -95,29 +89,6 @@ const jsonld = {
           {tag && <a class="more" href={`/tags/${tag.slug}`}>「{tag.ja}」の記事<small>{posts.filter((q) => q.tags.includes(tag)).length}本</small><span aria-hidden="true">→</span></a>}
         </p>
 
-        {p.comments.length > 0 && (
-          <section class="comments" id="comments">
-            <h2 class="sub"><span class="display">C<O />mments</span><small>コメント {p.comments.length}件</small></h2>
-            <ol>
-              {tops.map((c) => (
-                <li>
-                  <p class="comments__who"><b>{c.name}</b><time datetime={c.date}>{cdate(c)}</time></p>
-                  <div class="comments__body" set:html={c.html} />
-                  {kids(c).length > 0 && (
-                    <ol>
-                      {kids(c).map((k) => (
-                        <li>
-                          <p class="comments__who"><b>{k.name}</b><time datetime={k.date}>{cdate(k)}</time></p>
-                          <div class="comments__body" set:html={k.html} />
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </section>
-        )}
       </div>
     </div>
   </article>

@@ -30,17 +30,6 @@ export const tags = [
   { slug: 'others', ja: 'その他', en: 'N|tes' },
 ];
 
-// トップの「Focus」。旧ブログの Featured articles にあった一本と、その紹介文（文言は旧ブログのまま）。
-// 外すときは配列を空にする。
-export const featured = [
-  {
-    id: 5009,
-    html: `<p>スタートアップライフにおすすめ！<em>完全食COMP</em>の導入と利点。</p>
-<p>アンバサダーとして<a href="https://www.comp.jp/">完全食COMP</a>生活を始めてみた。</p>
-<p>スタートアップにおける完全食のメリット・デメリットについて語ってみる。</p>`,
-  },
-];
-
 export const author = {
   id: 'https://tsam.co.jp/#ikemori',
   name: '池森裕毅',

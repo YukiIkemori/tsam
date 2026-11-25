@@ -66,7 +66,7 @@ const sample = new Set(['/', '/archives', '/tags/columns', '/tags/contribution',
         }
         for (const el of document.querySelectorAll('a, button, summary')) {
           const rc = el.getBoundingClientRect(); if (!rc.width) continue;
-          if (el.closest('.entry, .comments__body, .focus__body, .focus__title')) continue;
+          if (el.closest('.entry')) continue;
           if (el.tagName === 'SUMMARY' && getComputedStyle(el).pointerEvents === 'none') continue;
           if (el.closest('.toc') && innerWidth >= 900) continue; // 広い画面の目次はマウスで押す細い行
           if (rc.height < 43.5) out.tap.push((el.className || el.tagName) + ' ' + Math.round(rc.width) + 'x' + Math.round(rc.height) + ' ' + (el.textContent || '').trim().slice(0, 14));

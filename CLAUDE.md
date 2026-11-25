@@ -68,11 +68,11 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
   このスクリプトは一度きりの道具で、もう流さない
 - **記事を直したら `modified` を直す**（sitemap の lastmod と構造化データの dateModified がここから出る）
 - **タグ**は `blog/src/data/site.ts` の `tags`。`en` は頁の大きな見出しで、o のある語にする（「|」の位置の o が輪になる）
-- **トップの Focus**（旧ブログの Featured articles）は `site.ts` の `featured`。いまは旧ブログのままの一本
-- **コメント**は旧ブログに付いていた26件を記事の下にそのまま残してある（`blog/src/data/comments.json`）。新しくは受け付けない
 - **書いた人・著書**は `blog/src/data/site.ts`。公式サイト（`www/src/pages/index.astro`）と同じ事実なので、**片方を直したらもう片方も直す**
-- 旧ブログから**引き継がなかったもの**：Community（Stoked capital）と講演実績一例（公式サイトで載せないと決めたものに合わせた）、
-  コメントの投稿フォーム、`/?tags=…&p=…` の絞り込み（いまは `/tags/<名前>` と `/archives`）
+- 旧ブログから**引き継がなかったもの**：コメント（26件あった。オーナー 2026-11-26「コメントは消して」。投稿フォームも無い）、
+  Featured articles（完全食COMPの記事をトップで特別に見せる枠。オーナー同日「特別扱いはしなくてよい」。記事そのものは残っている）、
+  Community（Stoked capital）と講演実績一例（公式サイトで載せないと決めたものに合わせた）、
+  `/?tags=…&p=…` の絞り込み（いまは `/tags/<名前>` と `/archives`）。**コメントと Featured の枠は戻さない**
 - ブログの記事の頁では、輪が頭の見出し（タグの英語の名前）から読み終わりの「Next round」（関連記事）まで左端の線を降りる。
   公式のキャッチ「Mentor to the next round.」に合わせて、関連記事の見出しを「Next round」にしてある
 - sitemap・RSS（`/feed.xml`）・`/llms.txt` は `posts/` の実体から作る。手で書かない
