@@ -1,10 +1,10 @@
 name: Deploy tsam.co.jp / blog.tsam.co.jp to Firebase Hosting
 
-# 【未検証】このワークフローはまだ一度も走らせていない。動かす前に要るもの:
-#   1. Firebase プロジェクト my-retro-bbs（off-notes と同じ）に、Hosting のサイトを二つ作る
-#        tsam-co-jp（公式。www/）と tsam-blog（ブログ。blog/）
-#      （別の名前で作ったら、firebase.json の "site" を合わせる）
-#   2. このリポジトリの Secrets に FIREBASE_TOKEN を入れる（off-notes と同じ値でよい）
+# 【未検証】このワークフローはまだ一度も走らせていない。
+#   ・Firebase プロジェクト my-retro-bbs のサイト tsam-co-jp（公式。www/）と tsam-blog（ブログ。blog/）は作成済み（2026-11-26、Dots）
+#   ・Google への名乗り方は、長く生きる鍵（firebase login:ci のトークン）を置かない形にした（Dots の指摘 2026-11-26）。
+#     GitHub がその場で出す短い証明を Google が確かめて、デプロイ用のサービスアカウントとして動く（Workload Identity Federation）。
+#     Google 側の準備と、このリポジトリの Variables（GCP_WIF_PROVIDER・GCP_DEPLOY_SA）がまだ。手順は docs/deploy.md
 # main へ push したときだけ走る。作業ブランチでは走らない。公式とブログは一緒に出す（意匠の部品を共有しているため）。
 on:
   push:
@@ -19,6 +19,10 @@ on:
 concurrency:
   group: tsam-deploy
   cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # Google に見せる短い証明を、GitHub に出してもらうため
 
 jobs:
   deploy:
@@ -44,7 +48,11 @@ jobs:
         run: |
           npm ci
           npm run build
+      - name: Google に名乗る（鍵は置かない）
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+      # 出す先は tsam の二つのサイトだけ（同じプロジェクトにある off-notes のサイトには触れない）
       - name: Deploy
-        run: npx firebase-tools deploy --only hosting --project my-retro-bbs --token "$FIREBASE_TOKEN"
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: npx firebase-tools deploy --only hosting:tsam-co-jp,hosting:tsam-blog --project my-retro-bbs

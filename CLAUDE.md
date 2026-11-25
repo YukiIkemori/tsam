@@ -7,10 +7,11 @@
 
 - `www/` が tsam.co.jp。Astro。`npm run build` で `www/dist/` に出る
 - 置き場所は Firebase Hosting（off-notes と同じプロジェクト `my-retro-bbs` に tsam 用のサイトを作る。オーナー了承 2026-11-25）。
-  **サイトの作成と、リポジトリの Secrets（FIREBASE_TOKEN）はまだ。**`firebase.json` と `.github/workflows/deploy.yml` は未検証
+  サイト `tsam-co-jp`・`tsam-blog` は作成済み（2026-11-26、Dots）。**デプロイの名乗り（鍵を置かない方式）の準備がまだ。**手順は `docs/deploy.md`。
+  `.github/workflows/deploy.yml` は未検証
 - `blog/` が blog.tsam.co.jp。Astro。`npm run build` で `blog/dist/` に出る。旧ブログ（WordPress）の165本を 2026-11-26 に全部移した。
   URL は `blog.tsam.co.jp/archives/<番号>` の形を変えない（オーナー決定）。**本番はまだ旧ブログ。**
-  Firebase のサイトは公式とは別にもう一つ要る（`firebase.json` の `tsam-blog`。これもまだ作っていない）
+  Firebase のサイトは公式とは別（`firebase.json` の `tsam-blog`）
 - `www/startup/` が教科書「スタートアップのはじめ方」の原稿（40頁）。tsam.co.jp/startup に出る。2026-11-26 に off-notes.com/startup/ から引っ越した。
   **off-notes 側はまだそのまま**（切り替えの日に 301 を入れる。手順は `docs/startup-move.md`）。下の「教科書」を読むこと
 - ブログは意匠の部品（輪の o・ロゴ・`global.css`・`ring.js`・書いた人の節）を `www/src` からそのまま読む（`@www/…`）。
@@ -129,6 +130,9 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 `site.ts` の `contactEndpoint` が空のあいだは、送信ボタンで内容を入れたメールアプリが開く（mailto）。
 受け口の URL を入れると、そこへ POST してその場で送信する動きに切り替わる（`src/components/ContactForm.astro`）。
 受け口は失敗しても 200 を返すので、フォームは返ってきた JSON の `ok` を見ている。
+受け口は札（token）の無い送信を受けない。フォームは書き始めに札をもらい、送信に添える（機械に送信枠を使い切られないため。`contact.gs` の頭）。
+**`contact.gs` を直したら `node forms/contact.test.cjs`**（Google の部品を真似た箱での確認。本物での確認ではない）。
+求める権限は「メールを送る」だけ（`forms/appsscript.json`）。スプレッドシートの控えは外した。権限を増やす直しは、オーナーに断ってから。
 
 ## 旧サイトから引き継いだもの
 
