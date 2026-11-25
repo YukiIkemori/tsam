@@ -43,7 +43,7 @@ DNS を触るのはオーナーか Dots。さくらのサーバーにはログ�
   **もう一つの Gmail は未確認**（手順 4）
 - **investors・test・wp も本体への相乗り**（CNAME）。本体の A を変えると一緒に Firebase を向き、「頁がありません」になる。
   investors は `tsam.co.jp/tsam-data/investors.js` も読んでいるので、名前だけさくらに向け直しても中身が出ない。
-  **investors は消す**（オーナー 2026-11-26。Startup 101 と同じ扱い）。test と wp も消す案（オーナーの確認はまだ）
+  **investors は消す**（オーナー 2026-11-26。Startup 101 と同じ扱い）。test と wp も消す（オーナー同日「消していいや」）
 - **証明書（2026-11-26、公開の発行記録 crt.sh で確認。サーバーに繋いで見たものではない）**：さくらVPS には Let's Encrypt の証明書が二枚ある。
   一枚は `tsam.jp` だけのもの、もう一枚は `tsam.co.jp`・blog・101・investors・test・wp の六つをまとめたもの。
   - メールの送信が使うのは `tsam.jp` のほうのはずなので、サイトを移しても更新は止まらない（SMTP が実際にどちらを出しているかは未確認）
@@ -87,7 +87,7 @@ SPF（`ip4:160.16.226.77`）は IP で書いてあるので、そのままでよ
 前提：新しい公式（このリポジトリの `www/`）と、静的化したブログの両方が、Firebase Hosting で本番と同じ中身を返していること。
 1. Firebase Hosting に `tsam.co.jp`（サイト `tsam-co-jp`）と `blog.tsam.co.jp`（サイト `tsam-blog`）をカスタムドメインとして足す。Firebase が示す TXT（所有確認）を足す
 2. Firebase が示す値に、`tsam.co.jp` の A と `blog.tsam.co.jp` を書き換える（値はそのとき Firebase の画面に出るものを使う。ここに書かない）
-3. `101.tsam.co.jp` `investors.tsam.co.jp` `test.tsam.co.jp` `wp.tsam.co.jp` のレコードを消す（test と wp はオーナーの確認を取ってから）。
+3. `101.tsam.co.jp` `investors.tsam.co.jp` `test.tsam.co.jp` `wp.tsam.co.jp` のレコードを消す（四つともオーナー了承済み）。
    101 を消すと、活動の記録の 2023-05-27「Startup 101 を開催」のリンク（`https://101.tsam.co.jp/`）が行き先を失う。
    同じ日に `www/src/data/activities.json` のその一件からリンクだけ外す（文字は残す）
 4. 既存の TXT（SPF・Search Console・OpenAI）は消さない
