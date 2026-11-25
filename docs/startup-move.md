@@ -61,4 +61,6 @@ off-notes.com/startup/ にあった教科書40頁（目次＋38頁＋用語集�
 ## 確かめていないこと
 
 - 本番の Firebase での動き（サイトがまだ無い）。URL の動きは模擬環境（firebase emulators）で確かめただけ
-- off-notes 側の作業は、この文書を書いただけで、何もしていない
+- off-notes 側の作業（上の 2 の 1〜6）は、2026-11-26 に枝 `claude/project-thread-jhecwd`（off-notes のリポジトリ。頭は f23be01）に用意した。
+  **main にはまだ入れていない。**tsam.co.jp が新サイトに切り替わり、`https://tsam.co.jp/startup/mvp` が開くのを確かめてから入れる（入れると本番に出る）。
+  /about/ の一行は「会社のサイトに教科書として置いてある」に直した。表示検証は壊れ0、301 は模擬環境で一回で着くのを確かめた
