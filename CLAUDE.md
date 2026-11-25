@@ -130,10 +130,11 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 `site.ts` の `contactEndpoint` が空のあいだは、送信ボタンで内容を入れたメールアプリが開く（mailto）。
 受け口の URL を入れると、そこへ POST してその場で送信する動きに切り替わる（`src/components/ContactForm.astro`）。
 受け口は失敗しても 200 を返すので、フォームは返ってきた JSON の `ok` を見ている。
-受け口は Dots が Cloudflare Turnstile で確かめる版を用意中（2026-11-26）。フォームはその形にも対応済みで、`site.ts` の `turnstileSiteKey` を入れると切り替わる（経緯は `docs/contact-form.md` の頭）。
-以下は、いまリポジトリにある版（`forms/contact.gs`）の話。受け口は札（token）の無い送信を受けない。フォームは書き始めに札をもらい、送信に添える（機械に送信枠を使い切られないため。`contact.gs` の頭）。
-**`contact.gs` を直したら `node forms/contact.test.cjs`**（Google の部品を真似た箱での確認。本物での確認ではない）。
-求める権限は「メールを送る」だけ（`forms/appsscript.json`）。スプレッドシートの控えは外した。権限を増やす直しは、オーナーに断ってから。
+機械よけは Cloudflare Turnstile（Dots の方針 2026-11-26）。フォームは、ブラウザが Cloudflare からもらった確認を添えて送り、受け口がそれを確かめる。
+`site.ts` の `contactEndpoint` と `turnstileSiteKey` の**両方**が入っているときだけ、その場で送信する。確認の部品はフォームに触ったときに初めて読む。
+受け口には通数の上限（1時間10通・1日40通、鍵つき）と送信枠の残りの確認がある（`contact.gs` の頭）。Turnstile のシークレットキーはスクリプトのプロパティにだけ置く（**リポジトリに書かない**）。
+**`contact.gs` を直したら `node forms/contact.test.cjs`**（Google と Cloudflare の部品を真似た箱での確認。本物での確認ではない）。
+求める権限は「メールを送る」と「外のサービス（Cloudflare）に問い合わせる」の二つ（`forms/appsscript.json`）。スプレッドシートの控えは外した。権限を増やす直しは、オーナーに断ってから。
 
 ## 旧サイトから引き継いだもの
 

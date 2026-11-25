@@ -1,28 +1,33 @@
-// forms/contact.gs を、Google の部品（CacheService など）を真似た箱の中で動かして確かめる。
+// forms/contact.gs を、Google の部品（CacheService など）と Cloudflare の返事を真似た箱の中で動かして確かめる。
 // 使い方: node forms/contact.test.cjs
-// **本物の Apps Script で確かめたことにはならない。**ここで見ているのは、札・上限・鍵の筋道だけ。
+// **本物の Apps Script・本物の Turnstile で確かめたことにはならない。**ここで見ているのは、確認・上限・鍵の筋道だけ。
 const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
-const crypto = require('node:crypto');
 const assert = require('node:assert');
 
 function box() {
   const cache = new Map();
-  const props = new Map();
+  const props = new Map([['TURNSTILE_SECRET', 'test-secret']]);
   const sent = [];
-  const state = { t: Date.UTC(2026, 10, 26, 1, 0, 0), quota: 100, locked: false };
+  const asked = [];
+  // cf：Cloudflare が返すもの。試験ごとに書き換える
+  const state = { t: Date.UTC(2026, 10, 26, 1, 0, 0), quota: 100, locked: false, cf: { code: 200, body: { success: true, action: 'tsam_contact', hostname: 'tsam.co.jp' } } };
   const ctx = {
     console: { error() {} },
     CacheService: { getScriptCache: () => ({ get: (k) => cache.get(k) ?? null, put: (k, v) => cache.set(k, v) }) },
     PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => props.get(k) ?? null, setProperty: (k, v) => props.set(k, v) }) },
     LockService: { getScriptLock: () => ({ tryLock: () => !state.locked, waitLock() {}, releaseLock() {} }) },
     MailApp: { getRemainingDailyQuota: () => state.quota, sendEmail: (m) => sent.push(m) },
+    UrlFetchApp: {
+      fetch: (url, opt) => {
+        asked.push({ url, opt });
+        if (state.cf.throws) throw new Error('network');
+        return { getResponseCode: () => state.cf.code, getContentText: () => (typeof state.cf.body === 'string' ? state.cf.body : JSON.stringify(state.cf.body)) };
+      },
+    },
     ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (s) => ({ setMimeType: () => JSON.parse(s) }) },
     Utilities: {
-      getUuid: () => crypto.randomUUID(),
-      computeHmacSha256Signature: (v, k) => [...crypto.createHmac('sha256', k).update(v).digest()],
-      base64EncodeWebSafe: (b) => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_'),
       formatDate: (d, tz, f) => {
         const j = new Date(d.getTime() + 9 * 3600e3).toISOString();
         const [Y, M, D, h, m] = [j.slice(0, 4), j.slice(5, 7), j.slice(8, 10), j.slice(11, 13), j.slice(14, 16)];
@@ -33,10 +38,9 @@ function box() {
   vm.createContext(ctx);
   vm.runInContext(fs.readFileSync(path.join(__dirname, 'contact.gs'), 'utf8'), ctx);
   ctx.now = () => state.t;
-  const good = { name: '山田', organization: '', email: 'a@example.com', topic: '講演', message: 'こんにちは' };
+  const good = { name: '山田', organization: '', email: 'a@example.com', topic: '講演', message: 'こんにちは', website: '', 'cf-turnstile-response': 'tok-1' };
   return {
-    ctx, sent, state, props,
-    token: () => ctx.doGet({ parameter: { token: '1' } }).token,
+    ctx, sent, asked, state, props,
     post: (extra) => ctx.doPost({ parameter: { ...good, ...extra } }),
     wait: (sec) => { state.t += sec * 1000; },
   };
@@ -45,108 +49,119 @@ function box() {
 let n = 0;
 const test = (name, fn) => { fn(box()); n++; console.log('ok', name); };
 
-test('札をもらい、数秒おいて送ると届く', (b) => {
-  const token = b.token();
-  b.wait(5);
-  assert.deepStrictEqual(b.post({ token }), { ok: true });
+test('確認が通れば届く。Cloudflare には鍵と確認を渡している', (b) => {
+  assert.deepStrictEqual(b.post({}), { ok: true });
   assert.strictEqual(b.sent.length, 1);
   assert.strictEqual(b.sent[0].to, 'ikemori@tsam.co.jp');
   assert.strictEqual(b.sent[0].replyTo, 'a@example.com');
+  assert.strictEqual(b.asked.length, 1);
+  assert.strictEqual(b.asked[0].url, 'https://challenges.cloudflare.com/turnstile/v0/siteverify');
+  assert.deepStrictEqual({ ...b.asked[0].opt.payload }, { secret: 'test-secret', response: 'tok-1' });
 });
-test('札が無い・でたらめ・署名違いは送らない', (b) => {
-  const token = b.token();
-  b.wait(5);
-  assert.strictEqual(b.post({}).error, 'token');
-  assert.strictEqual(b.post({ token: 'abc' }).error, 'token');
-  assert.strictEqual(b.post({ token: token.slice(0, -3) + (token.endsWith('AAA') ? 'BBB' : 'AAA') }).error, 'token');
-  const [ts, nonce, sig] = token.split('.');
-  assert.strictEqual(b.post({ token: `${Number(ts) - 100}.${nonce}.${sig}` }).error, 'token'); // 時刻だけ書き換え
+test('確認が無い・長すぎるものは、問い合わせもせずに断る', (b) => {
+  assert.strictEqual(b.post({ 'cf-turnstile-response': '' }).error, 'verification');
+  assert.strictEqual(b.post({ 'cf-turnstile-response': 'x'.repeat(2049) }).error, 'verification');
+  assert.strictEqual(b.asked.length, 0);
   assert.strictEqual(b.sent.length, 0);
 });
-test('もらってすぐの札と、古すぎる札は送らない', (b) => {
-  const t1 = b.token();
-  b.wait(1);
-  assert.strictEqual(b.post({ token: t1 }).error, 'token');
-  const t2 = b.token();
-  b.wait(2 * 3600 + 1);
-  assert.strictEqual(b.post({ token: t2 }).error, 'token');
+test('Cloudflare が通さなかった確認（偽物・使い回し）は送らない', (b) => {
+  b.state.cf.body = { success: false, 'error-codes': ['timeout-or-duplicate'] };
+  assert.strictEqual(b.post({}).error, 'verification');
   assert.strictEqual(b.sent.length, 0);
 });
-test('同じ札は一度しか使えない', (b) => {
-  const token = b.token();
-  b.wait(5);
-  assert.strictEqual(b.post({ token }).ok, true);
-  assert.strictEqual(b.post({ token }).error, 'token');
+test('別の用途・別のサイトで出た確認は送らない', (b) => {
+  b.state.cf.body = { success: true, action: 'login', hostname: 'tsam.co.jp' };
+  assert.strictEqual(b.post({}).error, 'verification');
+  b.state.cf.body = { success: true, action: 'tsam_contact', hostname: 'evil.example' };
+  assert.strictEqual(b.post({}).error, 'verification');
+  b.state.cf.body = { success: true, hostname: 'tsam.co.jp' };
+  assert.strictEqual(b.post({}).error, 'verification');
+  assert.strictEqual(b.sent.length, 0);
+});
+test('見本のホスト名は、プロパティ HOSTS に入れたときだけ通る', (b) => {
+  b.state.cf.body = { success: true, action: 'tsam_contact', hostname: 'tsam-co-jp.web.app' };
+  assert.strictEqual(b.post({}).error, 'verification');
+  b.props.set('HOSTS', 'tsam.co.jp, tsam-co-jp.web.app');
+  assert.strictEqual(b.post({}).ok, true);
   assert.strictEqual(b.sent.length, 1);
 });
-test('見えない欄が埋まっていたら、送らずに「送れた」と返す', (b) => {
-  assert.deepStrictEqual(b.post({ website: 'http://spam' }), { ok: true });
+test('シークレットキーが入っていなければ、何も送らない', (b) => {
+  b.props.delete('TURNSTILE_SECRET');
+  assert.strictEqual(b.post({}).error, 'server');
+  assert.strictEqual(b.asked.length, 0);
   assert.strictEqual(b.sent.length, 0);
 });
-test('欄が足りない・メールアドレスの形でないものは送らない', (b) => {
-  const token = b.token();
-  b.wait(5);
-  assert.strictEqual(b.post({ token, name: '' }).error, 'invalid');
-  assert.strictEqual(b.post({ token, email: 'x' }).error, 'invalid');
+test('Cloudflare に繋がらない・返事が読めないときは送らない', (b) => {
+  b.state.cf = { code: 500, body: 'oops' };
+  assert.strictEqual(b.post({}).error, 'server');
+  b.state.cf = { code: 200, body: '<html>' };
+  assert.strictEqual(b.post({}).error, 'server');
+  b.state.cf = { throws: true };
+  assert.strictEqual(b.post({}).error, 'server');
   assert.strictEqual(b.sent.length, 0);
 });
-test('件名に改行を入れさせない', (b) => {
-  const token = b.token();
-  b.wait(5);
-  b.post({ token, name: '山田\nBcc: x@example.com' });
-  assert.ok(!/[\r\n]/.test(b.sent[0].subject));
+test('人には見えない欄が埋まっていたら、送れたふりをして捨てる', (b) => {
+  assert.deepStrictEqual(b.post({ website: 'http://spam.example' }), { ok: true });
+  assert.strictEqual(b.asked.length, 0);
+  assert.strictEqual(b.sent.length, 0);
 });
-test('1時間に10通まで。時間が替わるとまた送れる', (b) => {
-  for (let i = 0; i < 12; i++) {
-    const token = b.token();
-    b.wait(5);
-    const r = b.post({ token });
-    assert.strictEqual(r.ok, i < 10, `i=${i}`);
-  }
+test('名前・内容が空、メールアドレスの形でないものは、問い合わせもせずに断る', (b) => {
+  assert.strictEqual(b.post({ name: ' ' }).error, 'invalid');
+  assert.strictEqual(b.post({ message: '' }).error, 'invalid');
+  assert.strictEqual(b.post({ email: 'abc' }).error, 'invalid');
+  assert.strictEqual(b.asked.length, 0);
+});
+test('1時間に10通まで。時間が変われば、また送れる', (b) => {
+  for (let i = 0; i < 10; i++) { assert.strictEqual(b.post({}).ok, true); b.wait(61); }
+  assert.strictEqual(b.post({}).error, 'busy');
   assert.strictEqual(b.sent.length, 10);
+  const before = b.asked.length;
+  assert.strictEqual(b.post({}).error, 'busy');
+  assert.strictEqual(b.asked.length, before, '上限のあとは Cloudflare に問い合わせない');
   b.wait(3600);
-  const token = b.token();
-  b.wait(5);
-  assert.strictEqual(b.post({ token }).ok, true);
+  assert.strictEqual(b.post({}).ok, true);
 });
-test('1日に40通まで。日が替わるとまた送れる', (b) => {
+test('1日に40通まで。日が変われば、また送れる', (b) => {
   let ok = 0;
-  for (let h = 0; h < 8; h++) {
-    for (let i = 0; i < 10; i++) {
-      const token = b.token();
-      b.wait(5);
-      if (b.post({ token }).ok) ok++;
-    }
-    b.wait(3600);
-  }
+  for (let h = 0; h < 6; h++) { for (let i = 0; i < 10; i++) { if (b.post({}).ok) ok++; b.wait(61); } b.wait(3600); }
   assert.strictEqual(ok, 40);
+  assert.strictEqual(b.sent.length, 40);
+  assert.strictEqual(b.post({}).error, 'busy');
   b.wait(24 * 3600);
-  const token = b.token();
-  b.wait(5);
-  assert.strictEqual(b.post({ token }).ok, true);
+  assert.strictEqual(b.post({}).ok, true);
+});
+test('数は消えない置き場にある（キャッシュが消えても数え直さない）', (b) => {
+  for (let i = 0; i < 10; i++) { b.post({}); b.wait(61); }
+  const c = JSON.parse(b.props.get('COUNT'));
+  assert.strictEqual(c.hn, 10);
+  assert.strictEqual(c.dn, 10);
 });
 test('Google の送信枠の残りが少ないときは送らない', (b) => {
   b.state.quota = 19;
-  const token = b.token();
-  b.wait(5);
-  assert.strictEqual(b.post({ token }).error, 'busy');
+  assert.strictEqual(b.post({}).error, 'busy');
   assert.strictEqual(b.sent.length, 0);
 });
-test('鍵が取れないときは送らない', (b) => {
-  const token = b.token();
-  b.wait(5);
+test('鍵が取れないとき（同時に来すぎ）は送らない', (b) => {
   b.state.locked = true;
-  assert.strictEqual(b.post({ token }).error, 'busy');
+  assert.strictEqual(b.post({}).error, 'busy');
   assert.strictEqual(b.sent.length, 0);
 });
-test('札の発行にも上限がある', (b) => {
-  let last;
-  for (let i = 0; i < 61; i++) last = b.ctx.doGet({ parameter: { token: '1' } });
-  assert.strictEqual(last.error, 'busy');
+test('Cloudflare への問い合わせは1分に10回まで', (b) => {
+  b.state.cf.body = { success: false };
+  for (let i = 0; i < 10; i++) assert.strictEqual(b.post({}).error, 'verification');
+  assert.strictEqual(b.post({}).error, 'busy');
+  assert.strictEqual(b.asked.length, 10);
+  b.wait(61);
+  b.state.cf.body = { success: true, action: 'tsam_contact', hostname: 'tsam.co.jp' };
+  assert.strictEqual(b.post({}).ok, true);
 });
-test('ただ開いたときは、札を出さない', (b) => {
-  const r = b.ctx.doGet({ parameter: {} });
-  assert.strictEqual(r.ok, true);
-  assert.strictEqual(r.token, undefined);
+test('件名に改行を入れさせない。長すぎる内容は切る', (b) => {
+  b.post({ name: '山田\r\nBcc: x@example.com', message: 'あ'.repeat(6000) });
+  assert.ok(!/[\r\n]/.test(b.sent[0].subject));
+  assert.ok(b.sent[0].body.length < 5400);
 });
+test('ただ開いたときは、案内だけを返す', (b) => {
+  assert.deepStrictEqual(b.ctx.doGet({ parameter: { token: '1' } }), { ok: true, about: 'tsam.co.jp contact form endpoint' });
+});
+
 console.log(`${n} 件とも通った`);
