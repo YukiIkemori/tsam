@@ -8,14 +8,20 @@
 - `www/` が tsam.co.jp。Astro。`npm run build` で `www/dist/` に出る
 - 置き場所は Firebase Hosting（off-notes と同じプロジェクト `my-retro-bbs` に tsam 用のサイトを作る。オーナー了承 2026-11-25）。
   **サイトの作成と、リポジトリの Secrets（FIREBASE_TOKEN）はまだ。**`firebase.json` と `.github/workflows/deploy.yml` は未検証
-- ブログ（blog.tsam.co.jp、165本）はまだ旧サイトのまま。URL は `blog.tsam.co.jp/archives/<番号>` の形を変えない（オーナー決定）。
-  静的化するときは `blog/` を足す
+- `blog/` が blog.tsam.co.jp。Astro。`npm run build` で `blog/dist/` に出る。旧ブログ（WordPress）の165本を 2026-11-26 に全部移した。
+  URL は `blog.tsam.co.jp/archives/<番号>` の形を変えない（オーナー決定）。**本番はまだ旧ブログ。**
+  Firebase のサイトは公式とは別にもう一つ要る（`firebase.json` の `tsam-blog`。これもまだ作っていない）
+- ブログは意匠の部品（輪の o・ロゴ・`global.css`・`ring.js`）を `www/src` からそのまま読む（`@www/…`）。
+  **www の部品を直すとブログも変わる。**直したら両方を見る。ブログだけの部品は `blog/src/styles/blog.css`
 
 ## 検証
 
 ```bash
 cd www && npm install && npm run build && npx astro preview   # http://localhost:4321/
 ```
+
+ブログは `cd blog && npm install && npm run build && npx astro preview --port 4322` のあと `node tools/verify.cjs`
+（全175頁を 390px と 1440px で開いて、横スクロール・画像切れ・リンク切れ・見出しの段飛ばし・小さい字・小さい押し場所を数える。30秒ほど）。
 
 確認はスマホ幅（390px）から。320 / 360 / 390 / 414 / 768 / 1024 / 1280 / 1440 / 1920px で横スクロールが無いこと。
 文字は 11.5px 以上、押すものは 44px 以上。
@@ -50,6 +56,28 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - **OGカードとアイコン**：`cd www && node tools/og.cjs`（Playwright が要る）。キャッチやロゴを変えたときだけ
 - **見本（本番に出す前に動きごと見てもらう1ファイルの写し）**：`cd www && npm run build && python3 tools/preview.py <出力先のフォルダ>`
 
+## ブログの更新のしかた
+
+- **記事を足す**：`blog/posts/<番号>.md` を一つ足す。番号はいちばん大きい番号の次（いま最大は 5641）。番号がそのまま URL になる。
+  頭の欄は `title`・`date`（`2026-12-01T09:00:00+09:00` の形）・`tags`（`[columns]` のように一つ）。本文は Markdown。
+  画像は `blog/public/images/<番号>/` に置いて `![説明](/images/<番号>/01.webp)`。
+  任意の欄：`modified`（直した日）、`description`（検索結果の説明文。無ければ書き出しから自動）、`image`（SNS 用の画像）、
+  `related`（関連記事の番号。無ければ同じタグの新しい記事）、`author: org`（寄稿。書き手を代表本人にしない）
+- **旧ブログから移した記事**（`blog/posts/<番号>.html`）は本文が HTML のまま。**文章には触れていない。**
+  移すときに変えたことは `blog/tools/import_wp.py` の頭に書いてある（画像の置き直し、記事どうしのリンク、見出しを h2 始まりに、など）。
+  このスクリプトは一度きりの道具で、もう流さない
+- **記事を直したら `modified` を直す**（sitemap の lastmod と構造化データの dateModified がここから出る）
+- **タグ**は `blog/src/data/site.ts` の `tags`。`en` は頁の大きな見出しで、o のある語にする（「|」の位置の o が輪になる）
+- **トップの Focus**（旧ブログの Featured articles）は `site.ts` の `featured`。いまは旧ブログのままの一本
+- **コメント**は旧ブログに付いていた26件を記事の下にそのまま残してある（`blog/src/data/comments.json`）。新しくは受け付けない
+- **書いた人・著書**は `blog/src/data/site.ts`。公式サイト（`www/src/pages/index.astro`）と同じ事実なので、**片方を直したらもう片方も直す**
+- 旧ブログから**引き継がなかったもの**：Community（Stoked capital）と講演実績一例（公式サイトで載せないと決めたものに合わせた）、
+  コメントの投稿フォーム、`/?tags=…&p=…` の絞り込み（いまは `/tags/<名前>` と `/archives`）
+- ブログの記事の頁では、輪が頭の見出し（タグの英語の名前）から読み終わりの「Next round」（関連記事）まで左端の線を降りる。
+  公式のキャッチ「Mentor to the next round.」に合わせて、関連記事の見出しを「Next round」にしてある
+- sitemap・RSS（`/feed.xml`）・`/llms.txt` は `posts/` の実体から作る。手で書かない
+- ブログ共通の OGカード：`cd blog && node tools/og.cjs`
+
 ## SEO / AIO の決まりごと（オーナー 2026-11-25「バリバリ効かせて」）
 
 - title は30全角以内、description は90〜125全角。**頁に見えている事実だけで書く**
@@ -60,7 +88,8 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - `/record`（活動の記録）は Event を使わず、CollectionPage とパンくずだけ（Event は場所などの必須項目を満たせない）
 - 頁を足したら `public/sitemap.xml` と `llms.txt.ts` の「頁」に足す
 - `sitemap.xml` に lastmod は書いていない（手で書くと直すたびに嘘になるため）
-- 一番効くのはブログ165本。**ブログを静的化するときに、記事ごとの Article と正しい canonical を入れる**（まだ）
+- 一番効くのはブログ165本。記事ごとに BlogPosting とパンくず、canonical（`blog.tsam.co.jp/archives/<番号>`）を入れてある。
+  記事の title は題そのまま（30全角を超えるものもあるが、題は変えない）。description は本文の書き出しから 120 字まで（`blog/src/lib/posts.ts`）
 
 ## お問い合わせフォーム
 

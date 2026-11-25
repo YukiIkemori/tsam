@@ -1,0 +1,16 @@
+{
+  "name": "tsam-blog",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/jost": "^5.3.0",
+    "astro": "^7.4.13",
+    "gray-matter": "^4.0.3",
+    "marked": "^16.0.0"
+  }
+}

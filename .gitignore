@@ -4,4 +4,4 @@ dist/
 .firebase/
 *.log
 .DS_Store
-www/tools/.og-build.html
+*/tools/.og-build.html

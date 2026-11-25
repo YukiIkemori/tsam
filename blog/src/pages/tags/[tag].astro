@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import Word from '../../components/Word.astro';
+import PostList from '../../components/PostList.astro';
+import { site, org } from '../../data/site';
+import { usedTags, byYear, abs } from '../../lib/posts';
+
+// タグごとの一覧。大きな字はタグの英語の名前（src/data/site.ts の en）。
+export function getStaticPaths() {
+  return usedTags.map((t) => ({ params: { tag: t.slug }, props: { t } }));
+}
+const { t } = Astro.props;
+const years = byYear(t.posts);
+const newest = t.posts[0];
+const path = `/tags/${t.slug}`;
+const title = `${t.ja}の記事一覧｜tsam.blog`;
+const description = `株式会社tsamのブログ「tsam.blog」から、「${t.ja}」の記事${t.posts.length}本を新しい順に並べています。いちばん新しい記事は「${newest.title}」（${Number(newest.date.slice(0, 4))}年${Number(newest.date.slice(5, 7))}月）です。`;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      '@id': `${site.url}${path}#webpage`,
+      url: `${site.url}${path}`,
+      name: title,
+      description,
+      inLanguage: 'ja',
+      isPartOf: { '@id': `${site.url}/#website` },
+      publisher: { '@id': org.id },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: t.posts.length,
+        itemListElement: t.posts.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(p.url), name: p.title })),
+      },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: site.name, item: `${site.url}/` },
+        { '@type': 'ListItem', position: 2, name: t.ja, item: `${site.url}${path}` },
+      ],
+    },
+  ],
+};
+---
+<Base title={title} description={description} path={path} jsonld={jsonld}>
+  <article class="sec record">
+    <header class="sec__head">
+      <p class="tag sec__round"><b>Topic</b></p>
+      <span class="record__count">{t.posts.length}本</span>
+      <h1><span class="sec__ja">{t.ja}</span> <span class="display fit" style={`--n:${t.en.length - 1}`}><Word word={t.en} /></span></h1>
+    </header>
+
+    <nav class="tagnav" aria-label="ほかのタグ">
+      <a href="/archives">すべて</a>
+      {usedTags.map((u) => <a href={`/tags/${u.slug}`} aria-current={u.slug === t.slug ? 'page' : undefined}>{u.ja}<small>{u.posts.length}</small></a>)}
+    </nav>
+
+    {years.map((y) => (
+      <section class="split split--year">
+        <h2 class="yr"><span class="display">{y.year}</span><small>{y.items.length}本</small></h2>
+        <div class="rv"><PostList items={y.items} short tag={false} /></div>
+      </section>
+    ))}
+
+    <a class="back" href="/">← Blog</a>
+  </article>
+</Base>

@@ -1,40 +1,50 @@
-name: Deploy tsam.co.jp to Firebase Hosting
+name: Deploy tsam.co.jp / blog.tsam.co.jp to Firebase Hosting
 
 # 【未検証】このワークフローはまだ一度も走らせていない。動かす前に要るもの:
-#   1. Firebase プロジェクト my-retro-bbs（off-notes と同じ）に、Hosting のサイト tsam-co-jp を作る
-#      （別の名前で作ったら、firebase.json の "site" と下の --only を合わせる）
+#   1. Firebase プロジェクト my-retro-bbs（off-notes と同じ）に、Hosting のサイトを二つ作る
+#        tsam-co-jp（公式。www/）と tsam-blog（ブログ。blog/）
+#      （別の名前で作ったら、firebase.json の "site" を合わせる）
 #   2. このリポジトリの Secrets に FIREBASE_TOKEN を入れる（off-notes と同じ値でよい）
-# main へ push したときだけ走る。作業ブランチでは走らない。
+# main へ push したときだけ走る。作業ブランチでは走らない。公式とブログは一緒に出す（意匠の部品を共有しているため）。
 on:
   push:
     branches: [main]
     paths:
       - 'www/**'
+      - 'blog/**'
       - 'firebase.json'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 concurrency:
-  group: tsam-www-deploy
+  group: tsam-deploy
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: www/package-lock.json
-      - name: Build
+          cache-dependency-path: |
+            www/package-lock.json
+            blog/package-lock.json
+      - name: Build www
         working-directory: www
         run: |
           npm ci
           npm run build
+      # ブログは www/src の部品（輪の o・ロゴ・色と字）を読むので、www の依存も入っている必要がある（上で入る）
+      - name: Build blog
+        working-directory: blog
+        run: |
+          npm ci
+          npm run build
       - name: Deploy
-        run: npx firebase-tools deploy --only hosting:tsam-co-jp --project my-retro-bbs --token "$FIREBASE_TOKEN"
+        run: npx firebase-tools deploy --only hosting --project my-retro-bbs --token "$FIREBASE_TOKEN"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

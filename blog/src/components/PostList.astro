@@ -1,0 +1,21 @@
+---
+// 記事の一覧（日付・題・タグ）。行ぜんたいが一つのリンク。excerpt を付けると書き出しも出す。
+import type { Post } from '../lib/posts';
+interface Props { items: Post[]; excerpt?: boolean; short?: boolean; tag?: boolean }
+const { items, excerpt = false, short = false, tag = true } = Astro.props;
+const md = (p: Post) => `${Number(p.date.slice(5, 7))}.${p.date.slice(8, 10)}`;
+---
+<ol class:list={['plist', { 'plist--short': short }]}>
+  {items.map((p) => (
+    <li>
+      <a href={p.url}>
+        <time datetime={p.date.slice(0, 10)}>{short ? md(p) : p.ymd}</time>
+        <span class="plist__main">
+          <span class="plist__title">{p.title}</span>
+          {excerpt && <span class="plist__body">{p.description}</span>}
+        </span>
+        {tag && <span class="plist__tag">{p.tags.map((t) => t.ja).join('・')}</span>}
+      </a>
+    </li>
+  ))}
+</ol>

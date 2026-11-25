@@ -1,0 +1,64 @@
+---
+import Base from '../layouts/Base.astro';
+import O from '@www/components/O.astro';
+import PostList from '../components/PostList.astro';
+import { site, org } from '../data/site';
+import { posts, byYear, usedTags, firstYear, lastYear, abs } from '../lib/posts';
+
+// 全部の記事を年ごとに並べる頁。大きな字は「Log」（blog の log）。
+const years = byYear(posts);
+const title = '記事一覧｜tsam.blog（株式会社tsam）';
+const description = `株式会社tsamのブログ「tsam.blog」の記事一覧。${firstYear}年から${lastYear}年までの全${posts.length}本を、年ごとに新しい順で並べています。${usedTags.map((t) => t.ja).join('、')}のタグからも探せます。`;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      '@id': `${site.url}/archives#webpage`,
+      url: `${site.url}/archives`,
+      name: title,
+      description,
+      inLanguage: 'ja',
+      isPartOf: { '@id': `${site.url}/#website` },
+      publisher: { '@id': org.id },
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: posts.length,
+        itemListElement: posts.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(p.url), name: p.title })),
+      },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: site.name, item: `${site.url}/` },
+        { '@type': 'ListItem', position: 2, name: '記事一覧', item: `${site.url}/archives` },
+      ],
+    },
+  ],
+};
+---
+<Base title={title} description={description} path="/archives" jsonld={jsonld}>
+  <article class="sec record">
+    <header class="sec__head">
+      <p class="tag sec__round"><b>{firstYear}–{lastYear}</b></p>
+      <span class="record__count">{posts.length}本</span>
+      <h1><span class="sec__ja">記事一覧</span> <span class="display">L<O />g</span></h1>
+    </header>
+
+    <nav class="jump" aria-label="年で飛ぶ">
+      {years.map((y) => <a href={`#y${y.year}`}>{y.year}</a>)}
+    </nav>
+    <nav class="tagnav" aria-label="タグで絞る">
+      {usedTags.map((t) => <a href={`/tags/${t.slug}`}>{t.ja}<small>{t.posts.length}</small></a>)}
+    </nav>
+
+    {years.map((y) => (
+      <section class="split split--year">
+        <h2 class="yr" id={`y${y.year}`}><span class="display">{y.year}</span><small>{y.items.length}本</small></h2>
+        <div class="rv"><PostList items={y.items} short /></div>
+      </section>
+    ))}
+
+    <a class="back" href="/">← Blog</a>
+  </article>
+</Base>

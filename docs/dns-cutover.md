@@ -30,6 +30,7 @@ DNS を触るのはオーナーか Dots。さくらのサーバーにはログ�
 - **いまのブログは、記事を `tsam.co.jp/wp-json/…` から読んでいる**（2026-11-25、ブラウザの通信で確認）。
   つまり blog.tsam.co.jp だけさくらに残しても、本体の A を変えた時点でブログは記事を読めなくなる。
   **本体の切り替えは、ブログの静的化が終わってから、二つ同時に**
+  （静的なブログは 2026-11-26 に `blog/` にできた。165本とも移してある。まだ Firebase には出していない）
 - メールの流れ（コーディネーターが Gmail のヘッダで確認）：tsam.co.jp 宛て → さくらVPS で受ける → Gmail へ転送。
   POP で取りに行く形ではないので、受信は MX さえ正しければサイトの切り替えの影響を受けない
 - Startup 101（101.tsam.co.jp）は残さない（オーナー 2026-11-25）
@@ -66,7 +67,7 @@ Gmail の「他のアドレスから送信」で、SMTP サーバーに `tsam.co
 
 ### 5. サイトを切り替える（メールが確かめられたあとにだけ）
 前提：新しい公式（このリポジトリの `www/`）と、静的化したブログの両方が、Firebase Hosting で本番と同じ中身を返していること。
-1. Firebase Hosting に `tsam.co.jp` と `blog.tsam.co.jp` をカスタムドメインとして足す。Firebase が示す TXT（所有確認）を足す
+1. Firebase Hosting に `tsam.co.jp`（サイト `tsam-co-jp`）と `blog.tsam.co.jp`（サイト `tsam-blog`）をカスタムドメインとして足す。Firebase が示す TXT（所有確認）を足す
 2. Firebase が示す値に、`tsam.co.jp` の A と `blog.tsam.co.jp` を書き換える（値はそのとき Firebase の画面に出るものを使う。ここに書かない）
 3. `101.tsam.co.jp` のレコードを消す
 4. 既存の TXT（SPF・Search Console・OpenAI）は消さない
