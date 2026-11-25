@@ -9,7 +9,8 @@ export const site = {
   // 旧サイトと同じ Google アナリティクス（GA4）の測定ID。計測を途切れさせないために引き継ぐ。
   ga: 'G-SGZRRJP3VJ',
   // お問い合わせフォームの送信先。空のあいだは、送信ボタンでメールアプリを開く（mailto）。
-  // フォームサービス（Formspree など）の URL を入れると、その場で送信する動きに切り替わる。
+  // 受け口（Google Apps Script のウェブアプリ。forms/contact.gs、手順は docs/contact-form.md）の URL を入れると、
+  // その場で送信する動きに切り替わる。
   contactEndpoint: '',
   // トップの「最近の活動」に出す件数（新しい順）。全件は /record に出る。
   recentCount: 8,

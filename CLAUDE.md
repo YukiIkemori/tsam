@@ -93,9 +93,11 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 
 ## お問い合わせフォーム
 
-届け先は ikemori@tsam.co.jp（オーナー 2026-11-25）。**送信の仕組みはまだ入れていない。**
+届け先は ikemori@tsam.co.jp（オーナー 2026-11-25）。**送信の仕組みは書いてあるが、まだ設置していない（未検証）。**
+受け口は Google Apps Script のウェブアプリ（`forms/contact.gs`。設置の手順は `docs/contact-form.md`。オーナーの Google アカウントで作る）。
 `site.ts` の `contactEndpoint` が空のあいだは、送信ボタンで内容を入れたメールアプリが開く（mailto）。
-URL を入れると、そこへ POST してその場で送信する動きに切り替わる（`src/components/ContactForm.astro`）。
+受け口の URL を入れると、そこへ POST してその場で送信する動きに切り替わる（`src/components/ContactForm.astro`）。
+受け口は失敗しても 200 を返すので、フォームは返ってきた JSON の `ok` を見ている。
 
 ## 旧サイトから引き継いだもの
 

@@ -4,6 +4,7 @@
 
 - `www/` — tsam.co.jp。Astro で組んで、`www/dist/` を Firebase Hosting に置く
 - `blog/` — blog.tsam.co.jp。Astro。記事は `blog/posts/<番号>.html`（旧ブログから移した165本）か `.md`（これから書く記事）。`blog/dist/` を Firebase Hosting に置く
+- `forms/contact.gs` — お問い合わせフォームの受け口（Google Apps Script）。設置の手順は `docs/contact-form.md`。まだ設置していない
 - `docs/dns-cutover.md` — 旧サイト（さくらVPS の WordPress）から切り替えるときの DNS の手順書（案）
 - 作業の決まりごとは `CLAUDE.md`
 
