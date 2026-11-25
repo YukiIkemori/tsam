@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "site": "tsam-co-jp",
+    "public": "www/dist",
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "redirects": [
+      { "source": "/archives/:id", "destination": "https://blog.tsam.co.jp/archives/:id", "type": 301 },
+      { "source": "/blog", "destination": "https://blog.tsam.co.jp/", "type": 301 },
+      { "source": "/pages/transaction", "destination": "/", "type": 301 },
+      { "source": "/pages/consulting-fees", "destination": "/", "type": 301 },
+      { "source": "/payment/**", "destination": "/", "type": 301 }
+    ],
+    "headers": [
+      { "source": "/_astro/**", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
+    ]
+  }
+}

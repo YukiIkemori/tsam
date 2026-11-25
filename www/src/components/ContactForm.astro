@@ -1,0 +1,89 @@
+---
+import { site } from '../data/site';
+// 送信先は site.contactEndpoint。空のあいだはメールアプリを開く（下の script）。
+const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
+---
+<form class="form rv" data-contact data-endpoint={site.contactEndpoint} data-to={site.email} novalidate>
+  <div class="field">
+    <label for="f-name">お名前</label>
+    <input id="f-name" name="name" type="text" autocomplete="name" required>
+  </div>
+  <div class="field">
+    <label for="f-org">会社名・団体名<small>任意</small></label>
+    <input id="f-org" name="organization" type="text" autocomplete="organization">
+  </div>
+  <div class="field field--wide">
+    <label for="f-mail">メールアドレス</label>
+    <input id="f-mail" name="email" type="email" autocomplete="email" inputmode="email" required>
+  </div>
+  <fieldset class="field field--wide chips">
+    <legend>ご用件</legend>
+    {topics.map((t, i) => (
+      <label class="chip"><input type="radio" name="topic" value={t} checked={i === 0}><span>{t}</span></label>
+    ))}
+  </fieldset>
+  <div class="field field--wide">
+    <label for="f-body">内容</label>
+    <textarea id="f-body" name="message" rows="5" required></textarea>
+  </div>
+  <p class="hp" aria-hidden="true"><label>このらんは空のままにしてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></p>
+  <div class="form__end field--wide">
+    <button class="send" type="submit"><span>送信</span><i aria-hidden="true">→</i></button>
+    <p class="form__note">お送りいただいた内容は、<a href="/pages/privacy-policy">プライバシーポリシー</a>に沿って取り扱います。</p>
+  </div>
+  <p class="form__status field--wide" role="status" aria-live="polite"></p>
+</form>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact]');
+  if (form) {
+    const status = form.querySelector('.form__status') as HTMLElement;
+    const say = (msg: string, bad = false) => {
+      status.textContent = msg;
+      status.classList.toggle('is-bad', bad);
+    };
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      if (fd.get('website')) return; // 人には見えないらん。埋まっていたら機械なので捨てる
+      const need = ['name', 'email', 'message'].find((k) => !String(fd.get(k) || '').trim());
+      const mail = String(fd.get('email') || '');
+      if (need || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+        say('お名前・メールアドレス・内容をご記入ください。', true);
+        (form.elements.namedItem(need || 'email') as HTMLElement)?.focus();
+        return;
+      }
+      const to = form.dataset.to!;
+      const ep = form.dataset.endpoint;
+      if (!ep) {
+        // 送信先が未設定のあいだの動き：書いた内容を入れた状態でメールアプリを開く
+        const body = [
+          `お名前：${fd.get('name')}`,
+          `会社名・団体名：${fd.get('organization') || ''}`,
+          `メールアドレス：${mail}`,
+          `ご用件：${fd.get('topic')}`,
+          '',
+          String(fd.get('message')),
+        ].join('\n');
+        const subject = `【tsam.co.jp】${fd.get('topic')}のお問い合わせ`;
+        location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        say('メールアプリを開きました。そのまま送信してください。');
+        return;
+      }
+      const btn = form.querySelector('button')!;
+      btn.disabled = true;
+      say('送信しています。');
+      try {
+        fd.delete('website');
+        const r = await fetch(ep, { method: 'POST', body: fd, headers: { Accept: 'application/json' } });
+        if (!r.ok) throw new Error(String(r.status));
+        form.reset();
+        say('送信しました。折り返しご連絡します。');
+      } catch {
+        say(`送信できませんでした。お手数ですが ${to} までメールでお送りください。`, true);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+</script>
