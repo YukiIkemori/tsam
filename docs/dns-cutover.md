@@ -17,7 +17,11 @@ DNS を触るのはオーナーか Dots。さくらのサーバーにはログ�
 | tsam.co.jp | TXT | openai-domain-verification=… |
 | blog.tsam.co.jp | CNAME | tsam.co.jp |
 | 101.tsam.co.jp | CNAME | tsam.co.jp |
-| www.tsam.co.jp / _dmarc.tsam.co.jp | — | 無い |
+| investors.tsam.co.jp | CNAME | tsam.co.jp（「Startup Investors Community」の頁が出ている。2026-11-26 に証明書の公開記録から見つけた） |
+| test.tsam.co.jp | CNAME | tsam.co.jp（公式サイトの写し） |
+| wp.tsam.co.jp | CNAME | tsam.co.jp（題が「未使用 (実験場)」の WordPress。noindex） |
+| www / mail / _dmarc.tsam.co.jp | — | 無い |
+| tsam.jp（別のドメイン） | A / MX | 160.16.226.77 / `10 tsam.jp.`（同じさくらVPS。Gmail の送信はこの名前で繋いでいる） |
 
 外から見えるのはここまで。**DKIM のセレクタや、ほかのサブドメインは外からは列挙できない。**
 手順 0 でお名前.com の画面から全部を控えるのはそのため。
@@ -34,6 +38,21 @@ DNS を触るのはオーナーか Dots。さくらのサーバーにはログ�
 - メールの流れ（コーディネーターが Gmail のヘッダで確認）：tsam.co.jp 宛て → さくらVPS で受ける → Gmail へ転送。
   POP で取りに行く形ではないので、受信は MX さえ正しければサイトの切り替えの影響を受けない
 - Startup 101（101.tsam.co.jp）は残さない（オーナー 2026-11-25）
+- **Gmail の送信設定（2026-11-26、Dots が画面で確認）**：一つ目の Gmail には ikemori@tsam.co.jp が登録されていて、
+  SMTP サーバーは **`tsam.jp`・465番・SSL**。`tsam.co.jp` ではない。だから tsam.co.jp の A を変えても、この Gmail からの送信は止まらない。
+  **もう一つの Gmail は未確認**（手順 4）
+- **investors・test・wp も本体への相乗り**（CNAME）。本体の A を変えると一緒に Firebase を向き、「頁がありません」になる。
+  investors は `tsam.co.jp/tsam-data/investors.js` も読んでいるので、名前だけさくらに向け直しても中身が出ない。
+  **investors を残すかどうかはオーナーに確認中**（2026-11-26）。test と wp は消す案
+- **証明書（2026-11-26、公開の発行記録 crt.sh で確認。サーバーに繋いで見たものではない）**：さくらVPS には Let's Encrypt の証明書が二枚ある。
+  一枚は `tsam.jp` だけのもの、もう一枚は `tsam.co.jp`・blog・101・investors・test・wp の六つをまとめたもの。
+  - メールの送信が使うのは `tsam.jp` のほうのはずなので、サイトを移しても更新は止まらない（SMTP が実際にどちらを出しているかは未確認）
+  - 六つまとめたほうは、tsam.co.jp と blog が Firebase へ移ると更新が通らなくなる（六つとも確かめられないと出ない）。
+    さくらに残す名前（investors など）があるなら、その名前だけの証明書を取り直す作業が要る（＝サーバーに入る人が要る）
+  - **二枚とも期限が 2026-11-30 03:05（日本時間）で、新しいものの発行がまだ記録に出ていない。**ふだんは期限の30日ほど前に更新されている。
+    今年の6月には、期限が切れて4時間後に発行された回がある。記録の反映が遅れているだけかもしれないが、
+    更新されなければ 11-30 の未明から、いまのサイトが警告つきになり、**Gmail からの送信（tsam.jp:465）も止まりうる。**
+    切り替えとは関係なく起きることなので、Dots とオーナーに知らせた（2026-11-26）
 
 ## 手順
 
@@ -53,23 +72,25 @@ SPF（`ip4:160.16.226.77`）は IP で書いてあるので、そのままでよ
 - 外のアドレスから、よく使う tsam.co.jp のアドレス数本へ送り、Gmail に届くこと
 - tsam.co.jp のアドレスを差出人にして送り、相手に届くこと（迷惑メールに入らないこと）
 
-### 4. 送信側の設定を確かめる【未確認。オーナーに確認を依頼中】
-Gmail の「他のアドレスから送信」で、SMTP サーバーに `tsam.co.jp` と書いてある場合、サイトの A を変えると送信できなくなる。
-切り替えの前に `mail.tsam.co.jp` へ書き換える。
+### 4. 送信側の設定を確かめる【一つ目の Gmail は確認済み。もう一つが未確認】
+一つ目の Gmail は SMTP が `tsam.jp`（465・SSL）なので、**書き換えは要らない。**tsam.co.jp の A を変えても送信は続く。
+`mail.tsam.co.jp` は受信（MX）のためだけに作る名前で、送信の設定には使わない。
 
-**気をつける点が二つ。**
-- 証明書の名前。さくら側のメールサーバーの証明書が `tsam.co.jp` 用だけだと、`mail.tsam.co.jp` で繋いだときに名前が合わず、Gmail が送信を断ることがある
-- 証明書の更新。さくら側で `tsam.co.jp` の証明書を自動更新している場合（Let's Encrypt など）、サイトの A が移ったあとは更新が通らなくなり、
-  **切り替えの日には動いていても、数か月後に送信だけ止まる**ことがありうる
-
-どちらも当てはまるなら、さくら側で `mail.tsam.co.jp` の証明書を取る作業が要る（＝サーバーに入る人が要る）。
-「サーバーに入らない」前提が崩れるのはここだけなので、**手順 3 の送信テストの結果と、Gmail の SMTP 設定を見てから判断する。**
+残り：
+- **もう一つの Gmail の「他のアドレスから送信」を見る。**SMTP サーバーが `tsam.co.jp` になっていたら、切り替えの前に `tsam.jp` へ書き換える
+  （一つ目と同じ名前にそろえる。`mail.tsam.co.jp` にすると、証明書の名前が合わずに断られる）
+- Gmail のほかに tsam.co.jp のアドレスで送っている道具（スマホのメールアプリなど）があれば、同じところを見る
+- SPF（`v=spf1 ip4:160.16.226.77 -all`）は、さくらVPS の IP を直に書いたもの。メールはこれからも同じ IP から出るので**変えない。**
+  新しいサイト（Firebase）はメールを送らない。お問い合わせフォームの通知は Google のアカウントから Gmail のアドレスで出るので、tsam.co.jp の SPF には関わらない
 
 ### 5. サイトを切り替える（メールが確かめられたあとにだけ）
 前提：新しい公式（このリポジトリの `www/`）と、静的化したブログの両方が、Firebase Hosting で本番と同じ中身を返していること。
 1. Firebase Hosting に `tsam.co.jp`（サイト `tsam-co-jp`）と `blog.tsam.co.jp`（サイト `tsam-blog`）をカスタムドメインとして足す。Firebase が示す TXT（所有確認）を足す
 2. Firebase が示す値に、`tsam.co.jp` の A と `blog.tsam.co.jp` を書き換える（値はそのとき Firebase の画面に出るものを使う。ここに書かない）
-3. `101.tsam.co.jp` のレコードを消す
+3. `101.tsam.co.jp` `test.tsam.co.jp` `wp.tsam.co.jp` のレコードを消す（test と wp はオーナーの確認を取ってから）。
+   `investors.tsam.co.jp` はオーナーの答えに合わせる（消す／新しい置き場所へ写す）。
+   101 を消すと、活動の記録の 2023-05-27「Startup 101 を開催」のリンク（`https://101.tsam.co.jp/`）が行き先を失う。
+   同じ日に `www/src/data/activities.json` のその一件からリンクだけ外す（文字は残す）
 4. 既存の TXT（SPF・Search Console・OpenAI）は消さない
 5. 証明書が出るまで待ち、`https://tsam.co.jp/` `https://blog.tsam.co.jp/archives/<番号>` が開くことを確かめる
 6. もう一度、手順 3 の送受信テストをやる
