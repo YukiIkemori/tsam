@@ -11,8 +11,7 @@ export const site = {
   // お問い合わせフォームの送信先。空のあいだは、送信ボタンでメールアプリを開く（mailto）。
   // フォームサービス（Formspree など）の URL を入れると、その場で送信する動きに切り替わる。
   contactEndpoint: '',
-  // 「最近の活動」は activities.json で "pick": true を付けたものを出す。
-  // 一つも付いていないときだけ、新しい順にこの件数を出す。
+  // トップの「最近の活動」に出す件数（新しい順）。全件は /record に出る。
   recentCount: 8,
   social: [
     { label: 'X', href: 'https://twitter.com/yuki_ikemori' },

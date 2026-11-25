@@ -65,6 +65,7 @@ const year = new Date().getFullYear();
   <a class="logo" href="/" aria-label="tsam トップへ"><Logo /></a>
   <ul class="foot__links">
     {site.social.map((s) => <li><a href={s.href} rel="noopener">{s.label}<span aria-hidden="true">↗</span></a></li>)}
+    <li><a href="/record">Record</a></li>
     <li><a href="/pages/privacy-policy">Privacy Policy</a></li>
   </ul>
   <p class="foot__copy">© {year} 株式会社tsam</p>

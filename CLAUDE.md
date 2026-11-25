@@ -41,13 +41,14 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 
 ## 更新のしかた
 
-- **最近の活動**：`www/src/data/activities.json`。旧サイトの News 180件（2019〜）を全部持っている。
-  トップに出るのは `"pick": true` を付けたものだけ（新しい順）。新しい活動は配列の頭に足し、出したければ pick を付ける。
+- **活動の記録**：`www/src/data/activities.json`。旧サイトの News 180件（2019〜）を全部持っている。
+  **選別はしない**（オーナー 2026-11-26「全部データ使おう。選別のほうがだるい」）。新しい活動は配列の頭に一件足すだけ。
+  トップの「最近の活動」には新しい順に8件（`site.ts` の `recentCount`）、`/record` には全件が年ごとに出る。
   本文の `[文字](URL)` はリンクになる
 - **経歴・著書・会社概要**：`www/src/pages/index.astro` の中
 - **決まった値**（メール、ブログのURL、アナリティクスのID、フォームの送信先）：`www/src/data/site.ts`
 - **OGカードとアイコン**：`cd www && node tools/og.cjs`（Playwright が要る）。キャッチやロゴを変えたときだけ
-- **見本（本番に出す前に動きごと見てもらう1ファイルの写し）**：`cd www && npm run build && python3 tools/preview.py <出力先.html>`
+- **見本（本番に出す前に動きごと見てもらう1ファイルの写し）**：`cd www && npm run build && python3 tools/preview.py <出力先のフォルダ>`
 
 ## SEO / AIO の決まりごと（オーナー 2026-11-25「バリバリ効かせて」）
 
@@ -56,6 +57,8 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
   Review・Event・SoftwareApplication・FAQPage は使わない（必須項目を満たせない／本文に無い問いを作ることになる）
 - 大きな見出しの h2 は「会社概要 Company」のように日本語の名前を中に持つ（並びは CSS でほどいている）
 - `/llms.txt` は `src/pages/llms.txt.ts` が作る。手で書かない。経歴や会社概要を直したら、ここも同じ事実になっているか見る
+- `/record`（活動の記録）は Event を使わず、CollectionPage とパンくずだけ（Event は場所などの必須項目を満たせない）
+- 頁を足したら `public/sitemap.xml` と `llms.txt.ts` の「頁」に足す
 - `sitemap.xml` に lastmod は書いていない（手で書くと直すたびに嘘になるため）
 - 一番効くのはブログ165本。**ブログを静的化するときに、記事ごとの Article と正しい canonical を入れる**（まだ）
 

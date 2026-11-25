@@ -3,14 +3,10 @@ import Base from '../layouts/Base.astro';
 import O from '../components/O.astro';
 import ContactForm from '../components/ContactForm.astro';
 import { site } from '../data/site';
-import activities from '../data/activities.json';
+import { all, recent } from '../data/activities';
 import { inline } from '../scripts/inline';
 
-// 最近の活動：activities.json のうち "pick": true を付けたものだけを、新しい順に出す。
-// 一つも付いていなければ、新しい順に頭の数件（site.recentCount）を出す。
-const byNew = [...activities].sort((a, b) => b.date.localeCompare(a.date));
-const picked = byNew.filter((a) => 'pick' in a && a.pick);
-const recent = picked.length ? picked : byNew.slice(0, site.recentCount);
+// 最近の活動は、新しい順に頭の数件（site.recentCount）。全件は /record。
 const ymd = (d: string) => d.replaceAll('-', '.');
 
 const years = [
@@ -209,6 +205,7 @@ const jsonld = {
 
     <div class="split split--sub" id="recent">
       <h3 class="sub rv"><span class="display">Recent</span><small>最近の活動</small></h3>
+      <div>
       <ol class="recent">
         {recent.map((a) => (
           <li class="rv">
@@ -220,6 +217,8 @@ const jsonld = {
           </li>
         ))}
       </ol>
+      <a class="more more--all" href="/record">すべての活動を見る<small>{all.length}件</small><span aria-hidden="true">→</span></a>
+      </div>
     </div>
   </section>
 

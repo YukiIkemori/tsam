@@ -2,14 +2,11 @@
 // まだ標準ではなく、検索の順位が上がる根拠も無い。費用がゼロだから置いている。
 import type { APIRoute } from 'astro';
 import { site } from '../data/site';
-import activities from '../data/activities.json';
+import { all, recent, firstYear, lastYear } from '../data/activities';
 
 const strip = (s: string) => s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '$1');
 
 export const GET: APIRoute = () => {
-  const byNew = [...activities].sort((a, b) => b.date.localeCompare(a.date));
-  const picked = byNew.filter((a) => 'pick' in a && a.pick);
-  const recent = picked.length ? picked : byNew.slice(0, site.recentCount);
   const body = `# 株式会社tsam（ツァム）
 
 > tsamは起業家をサポートする会社です。起業における成功確率を少しでも高められるように、日々活動をしています。キャッチフレーズは「${site.tagline}」。
@@ -47,11 +44,14 @@ export const GET: APIRoute = () => {
 
 ## 最近の活動
 
+講演・審査員・対談・就任・メディア掲載など、${firstYear}年から${lastYear}年までの全${all.length}件は ${site.url}/record にあります。
+
 ${recent.map((a) => `- ${a.date}: ${a.title}。${strip(a.body)}`).join('\n')}
 
 ## 頁
 
 - [トップ（会社概要・経歴・お問い合わせ）](${site.url}/)
+- [活動の記録（講演・審査員・メディア掲載。全${all.length}件）](${site.url}/record)
 - [プライバシーポリシー](${site.url}/pages/privacy-policy)
 - [ブログ（スタートアップ概論、投資家視点、ノウハウ、コラム）](${site.blog})
 `;
