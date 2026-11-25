@@ -130,7 +130,8 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 `site.ts` の `contactEndpoint` が空のあいだは、送信ボタンで内容を入れたメールアプリが開く（mailto）。
 受け口の URL を入れると、そこへ POST してその場で送信する動きに切り替わる（`src/components/ContactForm.astro`）。
 受け口は失敗しても 200 を返すので、フォームは返ってきた JSON の `ok` を見ている。
-受け口は札（token）の無い送信を受けない。フォームは書き始めに札をもらい、送信に添える（機械に送信枠を使い切られないため。`contact.gs` の頭）。
+受け口は Dots が Cloudflare Turnstile で確かめる版を用意中（2026-11-26）。フォームはその形にも対応済みで、`site.ts` の `turnstileSiteKey` を入れると切り替わる（経緯は `docs/contact-form.md` の頭）。
+以下は、いまリポジトリにある版（`forms/contact.gs`）の話。受け口は札（token）の無い送信を受けない。フォームは書き始めに札をもらい、送信に添える（機械に送信枠を使い切られないため。`contact.gs` の頭）。
 **`contact.gs` を直したら `node forms/contact.test.cjs`**（Google の部品を真似た箱での確認。本物での確認ではない）。
 求める権限は「メールを送る」だけ（`forms/appsscript.json`）。スプレッドシートの控えは外した。権限を増やす直しは、オーナーに断ってから。
 

@@ -2,6 +2,17 @@
 
 **【未検証】まだ設置していない。**設置して一通送ってみるまでは、サイトのフォームは「メールアプリを開く」動きのまま。
 
+**2026-11-26 の時点の方針**：受け口は Dots が用意する。機械よけには Cloudflare Turnstile（本物のボット判定）を使う版にする、というのが Dots の方針で、
+こちらのフォームはその形に対応済み（`ContactForm.astro`。`site.ts` の `turnstileSiteKey` と `contactEndpoint` の二つを入れると切り替わる）。
+フォームが送る欄は name・organization・email・topic・message・website（人には見えない欄）・cf-turnstile-response（action は `tsam_contact`）。
+返ってくるのは `{ok:true}` か `{ok:false, error: invalid|verification|busy|server}`。
+Dots の受け口のソースは、設置されたらこの `forms/` に入れる（動いているもの＝リポジトリの中身、にするため）。
+**下に書いてあるのは、その前に Claude が作った版**（`forms/contact.gs`。Cloudflare を使わず、受け口が自分で出す札で確かめる）。
+Dots の版が入ったら、この節と `forms/contact.gs` は入れ替える。フォームはどちらの版でも動く作りにしてある。
+
+Turnstile を使う場合に変わること：フォームに触った人のブラウザが Cloudflare と通信する（読むだけの人は通信しない）。
+出すときに、プライバシーポリシーへその旨を一行足す（オーナーに断ってから）。
+
 ## しくみ
 
 新しいサイトは置いてあるだけのファイルなので、自分ではメールを送れない。そこで Google Apps Script（Google アカウントがあれば無料で使える小さな受け口）を一つ作り、

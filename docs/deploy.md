@@ -8,7 +8,12 @@
 - 3日だけの見本（プレビューチャンネル。noindex）を Dots がコミット af9019a から出した。2026-11-29 06:48 ごろ失効
   - 公式 https://tsam-co-jp--dot-review-nov26-80v121yi.web.app/
   - ブログ https://tsam-blog--dot-review-nov26-5piv5nsd.web.app/
-- 独自ドメイン（tsam.co.jp・blog.tsam.co.jp）はまだ付けていない。DNS は何も変えていない（`docs/dns-cutover.md`）
+- 独自ドメイン（tsam.co.jp・blog.tsam.co.jp）は Firebase に仮に登録しただけ（Dots）。行き先はまだ旧サイト。切り替えの段取りは `docs/dns-cutover.md`
+- **当面のデプロイは Dots の手で**（Dots 2026-11-26）：Dots の手元の認証で、出す先を二つのサイトに絞って出す
+  （`firebase deploy --only hosting:tsam-co-jp,hosting:tsam-blog --project my-retro-bbs`）。
+  下の「鍵を置かない方式」は、**Dots が保留にしている。**理由は、Hosting 管理者の役割がプロジェクト単位で、同じプロジェクトの off-notes のサイトにも届くこと。
+  サイト単位に絞る方法が確かめられるまでは設定しない。だから下のワークフローは、いまは動かない
+- **このリポジトリにはまだ main が無い**（作業ブランチが唯一の枝）。ワークフローは main への push で走る作りなので、main を作るまでは何も起きない
 
 ## Google への名乗り方
 
