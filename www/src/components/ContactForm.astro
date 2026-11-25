@@ -1,9 +1,10 @@
 ---
 import { site } from '../data/site';
 // 送信先は site.contactEndpoint。空のあいだはメールアプリを開く（下の script）。
+// site.turnstileSiteKey が入っていれば、機械でないことの確認に Cloudflare Turnstile を使う（受け口がその版のとき）。
 const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
 ---
-<form class="form rv" data-contact data-endpoint={site.contactEndpoint} data-to={site.email} novalidate>
+<form class="form rv" data-contact data-endpoint={site.contactEndpoint} data-sitekey={site.turnstileSiteKey} data-to={site.email} novalidate>
   <div class="field">
     <label for="f-name">お名前</label>
     <input id="f-name" name="name" type="text" autocomplete="name" required>
@@ -27,6 +28,7 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
     <textarea id="f-body" name="message" rows="5" required></textarea>
   </div>
   <p class="hp" aria-hidden="true"><label>このらんは空のままにしてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></p>
+  <div class="form__check field--wide" data-check hidden></div>
   <div class="form__end field--wide">
     <button class="send" type="submit"><span>送信</span><i aria-hidden="true">→</i></button>
     <p class="form__note">お送りいただいた内容は、<a href="/pages/privacy-policy">プライバシーポリシー</a>に沿って取り扱います。</p>
@@ -42,9 +44,73 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
       status.textContent = msg;
       status.classList.toggle('is-bad', bad);
     };
-    // 札（token）。受け口は、札の無い送信・もらってすぐの送信を受けない（forms/contact.gs。機械が POST だけ投げるのを止める）。
-    // 書き始めたときに一枚もらっておき、送信のときに添える。札には寿命（2時間）があるので、古ければもらい直す。
     const live = !!form.dataset.endpoint && form.dataset.endpoint !== 'preview';
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    // 機械でないことの確かめ方は二つ。受け口（Google Apps Script）がどちらの版かで決まる。
+    //   A. Cloudflare Turnstile（site.turnstileSiteKey があるとき）。確認の結果を cf-turnstile-response として送る
+    //   B. 受け口が出す札（forms/contact.gs）。token として送る
+    // どちらも、フォームに触ったときに初めて動く（読むだけの人には、よその通信を起こさない）。
+    const sitekey = form.dataset.sitekey || '';
+
+    // --- A. Turnstile。確認は見えないところで済み、怪しいときだけ「チェックを入れてください」の欄が出る
+    type Turnstile = { render: (el: HTMLElement, o: Record<string, unknown>) => string; reset: (id: string) => void };
+    const check = { id: '', token: '', api: null as Turnstile | null, wait: [] as ((t: string) => void)[] };
+    let loading: Promise<void> | null = null;
+    const loadCheck = () =>
+      (loading ??= new Promise<void>((done, fail) => {
+        const s = document.createElement('script');
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        s.async = true;
+        s.onload = () => {
+          const box = form.querySelector<HTMLElement>('[data-check]')!;
+          box.hidden = false;
+          check.api = (window as unknown as { turnstile: Turnstile }).turnstile;
+          check.id = check.api.render(box, {
+            sitekey,
+            action: 'tsam_contact',
+            theme: 'dark', // お問い合わせの節は暗い地
+            language: 'ja',
+            appearance: 'interaction-only',
+            size: window.innerWidth < 380 ? 'compact' : 'flexible', // flexible は 300px より狭くならない
+            callback: (t: string) => {
+              check.token = t;
+              check.wait.splice(0).forEach((f) => f(t));
+            },
+            'expired-callback': () => {
+              check.token = '';
+              check.api?.reset(check.id);
+            },
+            'error-callback': () => {
+              check.token = '';
+            },
+          });
+          done();
+        };
+        s.onerror = () => {
+          loading = null;
+          fail(new Error('check'));
+        };
+        document.head.append(s);
+      }));
+    const getCheck = async (fresh = false) => {
+      await loadCheck();
+      if (fresh) {
+        check.token = '';
+        check.api?.reset(check.id);
+      }
+      if (check.token) return check.token;
+      say('機械でないことを確かめています。確認の欄が出たら、チェックを入れてください。');
+      return await Promise.race([
+        new Promise<string>((r) => check.wait.push(r)),
+        sleep(90000).then(() => {
+          throw new Error('check');
+        }),
+      ]);
+    };
+
+    // --- B. 札（token）。受け口は、札の無い送信・もらってすぐの送信を受けない（機械が POST だけ投げるのを止める）。
+    // 書き始めたときに一枚もらっておき、送信のときに添える。札には寿命（2時間）があるので、古ければもらい直す。
     let ticket: { token: string; at: number; wait: number } | null = null;
     let asking: Promise<void> | null = null;
     const ask = () =>
@@ -57,7 +123,6 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
         .finally(() => {
           asking = null;
         }));
-    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     const getToken = async (fresh = false) => {
       if (fresh || !ticket || Date.now() - ticket.at > 100 * 60 * 1000) {
         ticket = null;
@@ -69,7 +134,12 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
       if (rest > 0) await sleep(rest);
       return t.token;
     };
-    if (live) form.addEventListener('focusin', () => { if (!ticket) ask(); }, { once: true });
+
+    // field：送るときの欄の名前。stale：受け口が「確認が古い・通らなかった」と返すときの error
+    const guard = sitekey
+      ? { field: 'cf-turnstile-response', stale: 'verification', warm: () => loadCheck().catch(() => {}), get: getCheck, used: () => { check.token = ''; check.api?.reset(check.id); } }
+      : { field: 'token', stale: 'token', warm: () => { if (!ticket) ask(); }, get: getToken, used: () => { ticket = null; } };
+    if (live) form.addEventListener('focusin', () => guard.warm(), { once: true });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -108,19 +178,19 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
       btn.disabled = true;
       say('送信しています。');
       try {
-        fd.delete('website');
         // 欄を「name=…&email=…」の形で送る（受け口の Google Apps Script が確実に読める形。forms/contact.gs）。
         // 受け口は失敗しても 200 を返すので、返ってきた ok を見る
         const send = async (fresh: boolean) => {
-          fd.set('token', await getToken(fresh));
+          fd.set(guard.field, await guard.get(fresh));
+          say('送信しています。');
           const r = await fetch(ep, { method: 'POST', body: new URLSearchParams(fd as unknown as Record<string, string>), headers: { Accept: 'application/json' } });
           const j = await r.json().catch(() => null);
           if (!r.ok || !j) throw new Error(String(r.status));
           return j as { ok: boolean; error?: string };
         };
         let j = await send(false);
-        if (j.error === 'token') j = await send(true); // 札が古かった・使われていたときは、もらい直して一度だけやり直す
-        ticket = null;
+        if (j.error === guard.stale) j = await send(true); // 確認が古かった・使われていたときは、取り直して一度だけやり直す
+        guard.used(); // 確認は一回きり。次の送信には新しいものを使う
         if (j.ok !== true) throw new Error(j.error || 'failed');
         form.reset();
         say('送信しました。折り返しご連絡します。');

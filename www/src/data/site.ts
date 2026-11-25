@@ -12,6 +12,9 @@ export const site = {
   // 受け口（Google Apps Script のウェブアプリ。forms/contact.gs、手順は docs/contact-form.md）の URL を入れると、
   // その場で送信する動きに切り替わる。
   contactEndpoint: '',
+  // 機械でないことの確認（Cloudflare Turnstile）のサイトキー。公開してよい値（シークレットのほうは受け口の側にだけ置く）。
+  // 入れると、フォームは確認の結果を添えて送る。受け口が Turnstile を確かめる版のときにだけ入れる。空なら使わない。
+  turnstileSiteKey: '',
   // トップの「最近の活動」に出す件数（新しい順）。全件は /record に出る。
   recentCount: 8,
   social: [

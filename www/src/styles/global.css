@@ -406,6 +406,9 @@ body::after {
 .chip input:checked + span { background: var(--coral); border-color: var(--coral); color: var(--dark); }
 .chip input:focus-visible + span { outline: 2px solid var(--coral); outline-offset: 3px; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+/* 機械でないことの確認（Turnstile）。ふだんは空で、確認が要るときだけ欄が出る */
+.form__check:empty { display: none; }
+.form__check { min-width: 0; }
 .form__end { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; margin-top: 8px; }
 .send {
   flex: none;
