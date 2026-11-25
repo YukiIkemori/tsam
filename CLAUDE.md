@@ -47,6 +47,17 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - **経歴・著書・会社概要**：`www/src/pages/index.astro` の中
 - **決まった値**（メール、ブログのURL、アナリティクスのID、フォームの送信先）：`www/src/data/site.ts`
 - **OGカードとアイコン**：`cd www && node tools/og.cjs`（Playwright が要る）。キャッチやロゴを変えたときだけ
+- **見本（本番に出す前に動きごと見てもらう1ファイルの写し）**：`cd www && npm run build && python3 tools/preview.py <出力先.html>`
+
+## SEO / AIO の決まりごと（オーナー 2026-11-25「バリバリ効かせて」）
+
+- title は30全角以内、description は90〜125全角。**頁に見えている事実だけで書く**
+- 構造化データは `index.astro` の `jsonld`（WebSite・Organization・Person・Book×2・WebPage）。**本文に無い事実を書かない。**
+  Review・Event・SoftwareApplication・FAQPage は使わない（必須項目を満たせない／本文に無い問いを作ることになる）
+- 大きな見出しの h2 は「会社概要 Company」のように日本語の名前を中に持つ（並びは CSS でほどいている）
+- `/llms.txt` は `src/pages/llms.txt.ts` が作る。手で書かない。経歴や会社概要を直したら、ここも同じ事実になっているか見る
+- `sitemap.xml` に lastmod は書いていない（手で書くと直すたびに嘘になるため）
+- 一番効くのはブログ165本。**ブログを静的化するときに、記事ごとの Article と正しい canonical を入れる**（まだ）
 
 ## お問い合わせフォーム
 

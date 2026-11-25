@@ -23,58 +23,128 @@ const years = [
   ['2026', '信州大学特任教授に就任。'],
 ];
 
+// 著書。出版日と出版社は旧サイトの News（2023-07-05、2024-06-22）とブログの案内文から。
+// isbn は Amazon の商品番号（書籍は ISBN-10 と同じ）。
 const books = [
   {
     title: 'デジタル人材のシン・キャリアガイド',
     sub: 'スタートアップの始め方',
-    meta: '2023 ／ ぱる出版',
+    full: 'デジタル人材のシン・キャリアガイド―スタートアップの始め方',
+    role: '著',
+    date: '2023-07-05',
+    publisher: 'ぱる出版',
+    isbn: '482721378X',
     body: 'ITビジネスパーソンになるために知っておくこと、成功するためのキャリアガイド。経産省、自治体と連携し、デジタル人材の発掘、起業と成功率向上をサポートする著者がまとめた業界の最新必要情報が詰まった1冊。',
     href: 'https://www.amazon.co.jp/dp/482721378X',
   },
   {
     title: '図解・ビジネスモデルで学ぶスタートアップ',
     sub: '監修',
-    meta: '2024 ／ 日本能率協会マネジメントセンター',
+    full: '図解・ビジネスモデルで学ぶスタートアップ',
+    role: '監修',
+    date: '2024-06-22',
+    publisher: '日本能率協会マネジメントセンター',
+    isbn: '4800592364',
     body: 'スタートアップに興味のある若者へ、多様なビジネスモデルを、イラスト、図解、会話形式で解説。スタートアップの基本を学ぶ、理解を深める一冊。',
     href: 'https://www.amazon.co.jp/dp/4800592364',
   },
 ];
 
+// title は30全角以内、description は90〜125全角。どちらも頁に見えている事実だけで書く。
+const title = '株式会社tsam（ツァム）｜スタートアップ支援・代表 池森裕毅';
+const description =
+  '株式会社tsam（ツァム）は起業家をサポートする会社です。代表の池森裕毅は信州大学特任教授。行政・地方自治体・大学機関と連携してスタートアップカリキュラムを提供しています。講演・審査員のご依頼はお問い合わせフォームから。';
+
+// 構造化データ。**本文に無い事実は書かない**（経歴・役職・著書は、この頁に見えているものだけ）。
+// Review・Event・SoftwareApplication は使わない（必須項目を満たせず、検索側でエラーだけが出続ける）。
+const org = `${site.url}/#org`;
+const person = `${site.url}/#ikemori`;
 const jsonld = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
-  '@id': `${site.url}/#org`,
-  name: '株式会社tsam',
-  alternateName: ['tsam', 'ツァム'],
-  url: `${site.url}/`,
-  description: site.description,
-  foundingDate: '2019-02',
-  email: site.email,
-  address: {
-    '@type': 'PostalAddress',
-    postalCode: '102-0074',
-    addressRegion: '東京都',
-    addressLocality: '千代田区',
-    streetAddress: '九段南一丁目5番6号 りそな九段ビル5F',
-    addressCountry: 'JP',
-  },
-  founder: {
-    '@type': 'Person',
-    name: '池森裕毅',
-    jobTitle: '代表取締役',
-    sameAs: site.social.map((s) => s.href),
-  },
-  sameAs: [site.blog],
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${site.url}/#website`,
+      url: `${site.url}/`,
+      name: 'tsam',
+      alternateName: '株式会社tsam',
+      inLanguage: 'ja',
+      publisher: { '@id': org },
+    },
+    {
+      '@type': 'Organization',
+      '@id': org,
+      name: '株式会社tsam',
+      alternateName: ['tsam', 'ツァム'],
+      url: `${site.url}/`,
+      logo: `${site.url}/apple-touch-icon.png`,
+      image: `${site.url}/ogp.jpg`,
+      slogan: site.tagline,
+      description: 'tsamは起業家をサポートする会社です。起業における成功確率を少しでも高められるように、日々活動をしています。',
+      foundingDate: '2019-02',
+      email: site.email,
+      address: {
+        '@type': 'PostalAddress',
+        postalCode: '102-0074',
+        addressRegion: '東京都',
+        addressLocality: '千代田区',
+        streetAddress: '九段南一丁目5番6号 りそな九段ビル5F',
+        addressCountry: 'JP',
+      },
+      founder: { '@id': person },
+      contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', email: site.email, availableLanguage: 'ja', url: `${site.url}/#contact` },
+      sameAs: [site.blog],
+    },
+    {
+      '@type': 'Person',
+      '@id': person,
+      name: '池森裕毅',
+      alternateName: 'Yuki Ikemori',
+      url: `${site.url}/#background`,
+      jobTitle: ['株式会社tsam 代表取締役', '信州大学 特任教授'],
+      description: '1980年生まれ、千葉県松戸市出身。東京理科大学中退後、起業家として活動開始。現在は、信州大学特任教授として教育現場に携わる傍ら、後進の起業家育成に従事。',
+      birthDate: '1980',
+      birthPlace: { '@type': 'Place', name: '千葉県松戸市' },
+      worksFor: { '@id': org },
+      affiliation: [
+        { '@type': 'CollegeOrUniversity', name: '信州大学' },
+        { '@type': 'CollegeOrUniversity', name: '情報経営イノベーション専門職大学' },
+      ],
+      sameAs: site.social.map((s) => s.href),
+    },
+    ...books.map((b) => ({
+      '@type': 'Book',
+      name: b.full,
+      isbn: b.isbn,
+      inLanguage: 'ja',
+      datePublished: b.date,
+      publisher: { '@type': 'Organization', name: b.publisher },
+      // 一冊目は著者、二冊目は監修。監修に当たる型は無いので contributor に置く
+      [b.role === '著' ? 'author' : 'contributor']: { '@id': person },
+      url: b.href,
+    })),
+    {
+      '@type': 'WebPage',
+      '@id': `${site.url}/#webpage`,
+      url: `${site.url}/`,
+      name: title,
+      description,
+      inLanguage: 'ja',
+      isPartOf: { '@id': `${site.url}/#website` },
+      about: { '@id': org },
+      primaryImageOfPage: `${site.url}/ogp.jpg`,
+    },
+  ],
 };
 ---
-<Base title="株式会社tsam｜Mentor to the next round." path="/" home jsonld={jsonld}>
+<Base title={title} description={description} path="/" home jsonld={jsonld}>
 
   <section class="hero" id="top">
     <h1 class="display hero__title" aria-label="Mentor to the next round.">
       <span class="l">Mentor</span> <span class="l">to the</span> <span class="l l--last">next r<O hero />und.</span>
     </h1>
     <div class="hero__foot">
-      <p class="hero__lead">tsamは起業家を<wbr>サポートする会社です。</p>
+      <p class="hero__lead">株式会社tsamは<wbr>起業家をサポートする<wbr>会社です。</p>
       <p class="tag hero__place"><b>Tokyo</b><span>Since 2019</span></p>
       <a class="tag hero__next" href="#company"><b>Round 01</b><span aria-hidden="true">↓</span></a>
     </div>
@@ -82,8 +152,9 @@ const jsonld = {
 
   <section class="sec sec--paper" id="company">
     <div class="sec__head">
-      <div class="sec__meta"><p class="tag"><b>Round 01</b><span>会社概要</span></p><span class="lamps" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
-      <h2 class="display" aria-label="Company">C<O />mpany</h2>
+      <p class="tag sec__round"><b>Round 01</b></p>
+      <span class="lamps" aria-hidden="true"><i class="on"></i><i></i><i></i></span>
+      <h2><span class="sec__ja">会社概要</span> <span class="display">C<O />mpany</span></h2>
     </div>
     <div class="company">
       <p class="statement rv">一人ひとりが自分の力で<wbr>生きていけるように。<br>自分の力で自分が描いた世界を<wbr>創れるように。</p>
@@ -104,12 +175,13 @@ const jsonld = {
 
   <section class="sec" id="background">
     <div class="sec__head">
-      <div class="sec__meta"><p class="tag"><b>Round 02</b><span>代表の経歴</span></p><span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
-      <h2 class="display" aria-label="Background">Backgr<O />und</h2>
+      <p class="tag sec__round"><b>Round 02</b></p>
+      <span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span>
+      <h2><span class="sec__ja">代表の経歴</span> <span class="display">Backgr<O />und</span></h2>
     </div>
     <div class="split">
       <div class="who rv">
-        <p class="who__name">池森裕毅</p>
+        <p class="who__name">池森裕毅<span class="display" lang="en">Yuki Ikemori</span></p>
         <p class="who__role">代表取締役</p>
         <p>1980年生まれ、千葉県松戸市出身。東京理科大学中退後、起業家として活動開始。</p>
         <p>現在は、信州大学特任教授として教育現場に携わる傍ら、後進の起業家育成に従事。</p>
@@ -126,7 +198,7 @@ const jsonld = {
       <ul class="books">
         {books.map((b) => (
           <li class="rv">
-            <p class="books__meta">{b.meta}</p>
+            <p class="books__meta">{b.date.slice(0, 4)} ／ {b.publisher}</p>
             <p class="books__title">{b.title}<small>{b.sub}</small></p>
             <p class="books__body">{b.body}</p>
             <a class="more" href={b.href} rel="noopener">Amazonで見る<span aria-hidden="true">↗</span></a>
@@ -153,8 +225,9 @@ const jsonld = {
 
   <section class="sec sec--dark" id="contact">
     <div class="sec__head">
-      <div class="sec__meta"><p class="tag"><b>Round 03</b><span>お問い合わせ</span></p><span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
-      <h2 class="display" aria-label="Contact">C<O />ntact</h2>
+      <p class="tag sec__round"><b>Round 03</b></p>
+      <span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
+      <h2><span class="sec__ja">お問い合わせ</span> <span class="display">C<O />ntact</span></h2>
     </div>
     <div class="split">
       <div class="who rv">

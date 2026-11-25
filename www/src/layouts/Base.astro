@@ -3,8 +3,9 @@ import '@fontsource-variable/jost/wght.css';
 import '../styles/global.css';
 import Logo from '../components/Logo.astro';
 import { site } from '../data/site';
+import jost from '@fontsource-variable/jost/files/jost-latin-wght-normal.woff2?url';
 
-const { title, description = site.description, path = '/', home = false, jsonld } = Astro.props;
+const { title, description = site.description, path = '/', home = false, jsonld, noindex = false } = Astro.props;
 const canonical = new URL(path, site.url).href;
 const og = new URL('/ogp.jpg', site.url).href;
 const h = (id: string) => (home ? `#${id}` : `/#${id}`);
@@ -17,7 +18,9 @@ const year = new Date().getFullYear();
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{title}</title>
 <meta name="description" content={description}>
-<link rel="canonical" href={canonical}>
+<meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'}>
+{!noindex && <link rel="canonical" href={canonical}>}
+<link rel="preload" href={jost} as="font" type="font/woff2" crossorigin>
 <meta name="theme-color" content="#f0f0ee">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
@@ -31,7 +34,12 @@ const year = new Date().getFullYear();
 <meta property="og:image" content={og}>
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Mentor to the next round. の文字。round の o がコーラル色の輪になっている">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content={title}>
+<meta name="twitter:description" content={description}>
+<meta name="twitter:image" content={og}>
+<link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap">

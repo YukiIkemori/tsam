@@ -55,6 +55,11 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
       }
       const to = form.dataset.to!;
       const ep = form.dataset.endpoint;
+      if (ep === 'preview') {
+        // 見本（本番ではない場所に置いた写し）では何も送らない
+        say('これは見本です。送信はしていません。');
+        return;
+      }
       if (!ep) {
         // 送信先が未設定のあいだの動き：書いた内容を入れた状態でメールアプリを開く
         const body = [
