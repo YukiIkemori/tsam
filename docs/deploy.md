@@ -35,7 +35,7 @@ Google の側は Dots が 2026-11-27 に作った（プロジェクト `my-retro
 - **`--only hosting:tsam-co-jp` / `hosting:tsam-blog` を外さない。**Hosting 管理者の役割はプロジェクト単位で、同じプロジェクトの off-notes のサイトにも届く。
   出す先を絞っているのは、この引数だけ（Dots はこの点から tsam 専用のプロジェクトを勧めた。オーナーは 2026-11-27 に「今の Firebase のまま」を選んだ）
 - firebase-tools は版を決めてある（`env` の `FIREBASE_TOOLS`）。上げるときは `preview` で一度確かめる
-- ログに出る「Unable to add channel domain to Firebase Auth」は、役割が Hosting だけなので出る。配信には関係ない
+- 見本は `--no-authorized-domains` を付けて出す（見本の URL を Firebase Auth の許可ドメインに足しにいかない。役割が Hosting だけなので、付けないと警告が出る。Dots の指定）。**外さない**
 
 ## 経過
 
