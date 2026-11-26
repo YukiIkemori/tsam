@@ -93,5 +93,6 @@ jobs:
             firebase deploy --only "$only" --project "$PROJECT" --non-interactive
           else
             # 見本：3日で消える URL（*.web.app）に出す。本番には何も起きない
-            firebase hosting:channel:deploy ci-preview --only "$(echo $sites | tr ' ' ',')" --project "$PROJECT" --expires 3d --non-interactive
+            # --no-authorized-domains：見本の URL を Firebase Auth の許可ドメインに足しにいかない（役割は Hosting だけ。Dots の指定）
+            firebase hosting:channel:deploy ci-preview --only "$(echo $sites | tr ' ' ',')" --project "$PROJECT" --expires 3d --no-authorized-domains --non-interactive
           fi
