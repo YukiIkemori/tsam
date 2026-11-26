@@ -1,0 +1,93 @@
+name: Deploy tsam.co.jp / blog.tsam.co.jp to Firebase Hosting
+
+# main から、公式（tsam-co-jp。www/）とブログ（tsam-blog。blog/）を Firebase Hosting（プロジェクト my-retro-bbs）へ出す。
+#   ・Google への名乗り方は、長く生きる鍵を置かない形（Workload Identity Federation）。GitHub がその場で出す短い証明を Google が確かめて、
+#     デプロイ用のサービスアカウントとして動く。Google の側は「このリポジトリの main の、このファイル」だけを通す（2026-11-27、Dots）。
+#     だから**このファイルの名前を変えない。**変えると Google に断られる
+#   ・同じプロジェクトに off-notes のサイトもある。出す先は下の --only で tsam の二つだけに絞っている。**--only を外さない**
+#   ・いまは手で流すときだけ走る（Actions の画面か API の workflow_dispatch）。main への push で自動で出す形にするのは、一度通して確かめてから
+# 手順と経過は docs/deploy.md
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'preview＝3日で消える見本の URL に出す ／ live＝本番に出す'
+        type: choice
+        options: [preview, live]
+        default: preview
+      site:
+        description: '出すサイト'
+        type: choice
+        options: [www, blog, both]
+        default: www
+
+concurrency:
+  group: tsam-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # Google に見せる短い証明を、GitHub に出してもらうため
+
+env:
+  # どちらも秘密の値ではない（Google の側で、このリポジトリの main のこのファイルからしか使えないように絞ってある）
+  WIF_PROVIDER: ''
+  DEPLOY_SA: ''
+  PROJECT: my-retro-bbs
+
+jobs:
+  deploy:
+    # main 以外からは出さない（Google の側でも断られるが、ここでも止める）
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 名乗りの値が入っているか
+        run: |
+          if [ -z "$WIF_PROVIDER" ] || [ -z "$DEPLOY_SA" ]; then
+            echo "::error::WIF_PROVIDER と DEPLOY_SA がまだ空です（docs/deploy.md）"; exit 1
+          fi
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            www/package-lock.json
+            blog/package-lock.json
+      - name: Build www
+        working-directory: www
+        run: |
+          npm ci
+          npm run build
+      # ブログは www/src の部品（輪の o・ロゴ・色と字）を読むので、www の依存も入っている必要がある（上で入る）
+      - name: Build blog
+        working-directory: blog
+        run: |
+          npm ci
+          npm run build
+      - name: Google に名乗る（鍵は置かない）
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
+      # 出す先は tsam の二つのサイトだけ（同じプロジェクトにある off-notes のサイトには触れない）
+      - name: Deploy
+        env:
+          TARGET: ${{ inputs.target }}
+          SITE: ${{ inputs.site }}
+        run: |
+          case "$SITE" in
+            www)  sites="tsam-co-jp" ;;
+            blog) sites="tsam-blog" ;;
+            both) sites="tsam-co-jp tsam-blog" ;;
+            *) echo "::error::site が不明: $SITE"; exit 1 ;;
+          esac
+          only=""
+          for s in $sites; do only="${only:+$only,}hosting:$s"; done
+          if [ "$TARGET" = "live" ]; then
+            npx firebase-tools deploy --only "$only" --project "$PROJECT" --non-interactive
+          else
+            # 見本：3日で消える URL（*.web.app）に出す。本番には何も起きない
+            npx firebase-tools hosting:channel:deploy ci-preview --only "$(echo $sites | tr ' ' ',')" --project "$PROJECT" --expires 3d --non-interactive
+          fi
