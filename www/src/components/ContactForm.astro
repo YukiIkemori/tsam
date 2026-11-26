@@ -44,15 +44,16 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
       status.textContent = msg;
       status.classList.toggle('is-bad', bad);
     };
+    const live = !!form.dataset.endpoint && form.dataset.endpoint !== 'preview';
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-    // 機械でないことの確認（Cloudflare Turnstile）。受け口（forms/contact.gs）は、この確認の無い送信を受けない。
-    // 確認の部品は、フォームに触ったときに初めて読む（読むだけの人には、よその通信を起こさない）。
-    // 送信先（contactEndpoint）とサイトキー（turnstileSiteKey）の両方が入っているときだけ、その場で送信する。片方でも空ならメールアプリを開く。
+    // 機械でないことの確かめ方は二つ。受け口（Google Apps Script）がどちらの版かで決まる。
+    //   A. Cloudflare Turnstile（site.turnstileSiteKey があるとき）。確認の結果を cf-turnstile-response として送る
+    //   B. 受け口が出す札（forms/contact.gs）。token として送る
+    // どちらも、フォームに触ったときに初めて動く（読むだけの人には、よその通信を起こさない）。
     const sitekey = form.dataset.sitekey || '';
-    const live = !!form.dataset.endpoint && form.dataset.endpoint !== 'preview' && !!sitekey;
 
-    // 確認は見えないところで済み、怪しいときだけ「チェックを入れてください」の欄が出る
+    // --- A. Turnstile。確認は見えないところで済み、怪しいときだけ「チェックを入れてください」の欄が出る
     type Turnstile = { render: (el: HTMLElement, o: Record<string, unknown>) => string; reset: (id: string) => void };
     const check = { id: '', token: '', api: null as Turnstile | null, wait: [] as ((t: string) => void)[] };
     let loading: Promise<void> | null = null;
@@ -108,7 +109,37 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
       ]);
     };
 
-    if (live) form.addEventListener('focusin', () => loadCheck().catch(() => {}), { once: true });
+    // --- B. 札（token）。受け口は、札の無い送信・もらってすぐの送信を受けない（機械が POST だけ投げるのを止める）。
+    // 書き始めたときに一枚もらっておき、送信のときに添える。札には寿命（2時間）があるので、古ければもらい直す。
+    let ticket: { token: string; at: number; wait: number } | null = null;
+    let asking: Promise<void> | null = null;
+    const ask = () =>
+      (asking ??= fetch(`${form.dataset.endpoint}?token=1`, { headers: { Accept: 'application/json' } })
+        .then((r) => r.json())
+        .then((j) => {
+          if (j && j.ok && j.token) ticket = { token: j.token, at: Date.now(), wait: (Number(j.wait) || 4) * 1000 + 1500 };
+        })
+        .catch(() => {})
+        .finally(() => {
+          asking = null;
+        }));
+    const getToken = async (fresh = false) => {
+      if (fresh || !ticket || Date.now() - ticket.at > 100 * 60 * 1000) {
+        ticket = null;
+        await ask();
+      }
+      if (!ticket) throw new Error('token');
+      const t = ticket as { token: string; at: number; wait: number };
+      const rest = t.at + t.wait - Date.now();
+      if (rest > 0) await sleep(rest);
+      return t.token;
+    };
+
+    // field：送るときの欄の名前。stale：受け口が「確認が古い・通らなかった」と返すときの error
+    const guard = sitekey
+      ? { field: 'cf-turnstile-response', stale: 'verification', warm: () => loadCheck().catch(() => {}), get: getCheck, used: () => { check.token = ''; check.api?.reset(check.id); } }
+      : { field: 'token', stale: 'token', warm: () => { if (!ticket) ask(); }, get: getToken, used: () => { ticket = null; } };
+    if (live) form.addEventListener('focusin', () => guard.warm(), { once: true });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -128,7 +159,7 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
         say('これは見本です。送信はしていません。');
         return;
       }
-      if (!live) {
+      if (!ep) {
         // 送信先が未設定のあいだの動き：書いた内容を入れた状態でメールアプリを開く
         const body = [
           `お名前：${fd.get('name')}`,
@@ -150,18 +181,16 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
         // 欄を「name=…&email=…」の形で送る（受け口の Google Apps Script が確実に読める形。forms/contact.gs）。
         // 受け口は失敗しても 200 を返すので、返ってきた ok を見る
         const send = async (fresh: boolean) => {
-          fd.set('cf-turnstile-response', await getCheck(fresh));
+          fd.set(guard.field, await guard.get(fresh));
           say('送信しています。');
-          const r = await fetch(ep!, { method: 'POST', body: new URLSearchParams(fd as unknown as Record<string, string>), headers: { Accept: 'application/json' } });
+          const r = await fetch(ep, { method: 'POST', body: new URLSearchParams(fd as unknown as Record<string, string>), headers: { Accept: 'application/json' } });
           const j = await r.json().catch(() => null);
           if (!r.ok || !j) throw new Error(String(r.status));
           return j as { ok: boolean; error?: string };
         };
         let j = await send(false);
-        if (j.error === 'verification') j = await send(true); // 確認が古かった・使われていたときは、取り直して一度だけやり直す
-        // 確認は一回きり。次の送信には新しいものを使う
-        check.token = '';
-        check.api?.reset(check.id);
+        if (j.error === guard.stale) j = await send(true); // 確認が古かった・使われていたときは、取り直して一度だけやり直す
+        guard.used(); // 確認は一回きり。次の送信には新しいものを使う
         if (j.ok !== true) throw new Error(j.error || 'failed');
         form.reset();
         say('送信しました。折り返しご連絡します。');
