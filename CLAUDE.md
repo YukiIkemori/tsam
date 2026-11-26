@@ -1,7 +1,7 @@
 # tsam — 作業メモ（Claude Code向け）
 
-株式会社tsam の公式サイト。2026-11 に、さくらVPS の WordPress＋JSアプリから静的サイトへ作り直している途中。
-**まだ本番には出ていない。**本番はいまも旧サイト。切り替えの手順と注意は `docs/dns-cutover.md`。
+株式会社tsam の公式サイト。2026-11 に、さくらVPS の WordPress＋JSアプリから静的サイトへ作り直した。
+**2026-11-26 に本番を切り替えた**（tsam.co.jp と blog.tsam.co.jp は Firebase Hosting。メールはさくらのまま）。経過と残りの作業、戻し方は `docs/dns-cutover.md`。
 
 ## つくり
 
@@ -10,10 +10,10 @@
   サイト `tsam-co-jp`・`tsam-blog` は作成済み（2026-11-26、Dots）。**デプロイの名乗り（鍵を置かない方式）の準備がまだ。**手順は `docs/deploy.md`。
   `.github/workflows/deploy.yml` は未検証
 - `blog/` が blog.tsam.co.jp。Astro。`npm run build` で `blog/dist/` に出る。旧ブログ（WordPress）の165本を 2026-11-26 に全部移した。
-  URL は `blog.tsam.co.jp/archives/<番号>` の形を変えない（オーナー決定）。**本番はまだ旧ブログ。**
+  URL は `blog.tsam.co.jp/archives/<番号>` の形を変えない（オーナー決定）。2026-11-26 に本番を切り替えた。
   Firebase のサイトは公式とは別（`firebase.json` の `tsam-blog`）
 - `www/startup/` が教科書「スタートアップのはじめ方」の原稿（40頁）。tsam.co.jp/startup に出る。2026-11-26 に off-notes.com/startup/ から引っ越した。
-  **off-notes 側はまだそのまま**（切り替えの日に 301 を入れる。手順は `docs/startup-move.md`）。下の「教科書」を読むこと
+  off-notes 側の 301 も同じ日に入れた（`docs/startup-move.md`）。下の「教科書」を読むこと
 - ブログは意匠の部品（輪の o・ロゴ・`global.css`・`ring.js`・書いた人の節）を `www/src` からそのまま読む（`@www/…`）。
   **www の部品を直すとブログも変わる。**直したら両方を見る。ブログだけの部品は `blog/src/styles/blog.css`
 
