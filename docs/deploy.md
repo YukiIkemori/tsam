@@ -11,6 +11,7 @@
    - `site`：`www`（公式）／`blog`（ブログ）／`both`
 3. 中身を変えたときは、まず `preview` で流し、ログの最後に出る見本の URL（`https://tsam-co-jp--ci-preview-….web.app`）を
    `URL=<見本の URL> node tools/verify.cjs` で見る。よければ `live`
+   （活動の記録に一件足す・文言を直すだけのときは、手元の build と `tools/verify.cjs` が通っていれば、見本を飛ばして `live` でよい）
 4. `live` のあと、本番で `URL=https://tsam.co.jp node tools/verify.cjs`（ブログは `URL=https://blog.tsam.co.jp`）
 
 - 一回 40〜50 秒
