@@ -7,12 +7,6 @@
       "trailingSlash": false,
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "redirects": [
-        {
-          "//": "さくらVPS の証明書（Let's Encrypt）は tsam.co.jp と blog.tsam.co.jp も一緒に確かめる作りなので、確かめに来た問い合わせをさくらへ送り直す。外すと、さくらの証明書の更新が止まり、メールの送信が止まる。外してよいのは、さくらの証明書からこの名前を外したあと（docs/dns-cutover.md の「証明書」）",
-          "source": "/.well-known/acme-challenge/:token",
-          "destination": "http://mail.tsam.co.jp/.well-known/acme-challenge/:token",
-          "type": 302
-        },
         { "source": "/archives/:id", "destination": "https://blog.tsam.co.jp/archives/:id", "type": 301 },
         { "source": "/blog", "destination": "https://blog.tsam.co.jp/", "type": 301 },
         { "source": "/pages/transaction", "destination": "/", "type": 301 },
@@ -29,14 +23,6 @@
       "cleanUrls": true,
       "trailingSlash": false,
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-      "redirects": [
-        {
-          "//": "さくらVPS の証明書（Let's Encrypt）は tsam.co.jp と blog.tsam.co.jp も一緒に確かめる作りなので、確かめに来た問い合わせをさくらへ送り直す。外すと、さくらの証明書の更新が止まり、メールの送信が止まる。外してよいのは、さくらの証明書からこの名前を外したあと（docs/dns-cutover.md の「証明書」）",
-          "source": "/.well-known/acme-challenge/:token",
-          "destination": "http://mail.tsam.co.jp/.well-known/acme-challenge/:token",
-          "type": 302
-        }
-      ],
       "headers": [
         { "source": "/_astro/**", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] },
         { "source": "/images/**", "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000" }] }
