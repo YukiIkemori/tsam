@@ -7,8 +7,8 @@
 
 - `www/` が tsam.co.jp。Astro。`npm run build` で `www/dist/` に出る
 - 置き場所は Firebase Hosting（off-notes と同じプロジェクト `my-retro-bbs` に tsam 用のサイトを作る。オーナー了承 2026-11-25）。
-  サイト `tsam-co-jp`・`tsam-blog` は作成済み（2026-11-26、Dots）。**デプロイの名乗り（鍵を置かない方式）の準備がまだ。**手順は `docs/deploy.md`。
-  `.github/workflows/deploy.yml` は未検証
+  サイトは `tsam-co-jp`（公式）と `tsam-blog`（ブログ）。**main に入れて、ワークフロー `deploy-tsam.yml` を手で流すと出る**（2026-11-27 から。まず見本、次に本番）。
+  出し方と決まりごとは `docs/deploy.md`。ワークフローの名前と `--only` は変えない
 - `blog/` が blog.tsam.co.jp。Astro。`npm run build` で `blog/dist/` に出る。旧ブログ（WordPress）の165本を 2026-11-26 に全部移した。
   URL は `blog.tsam.co.jp/archives/<番号>` の形を変えない（オーナー決定）。2026-11-26 に本番を切り替えた。
   Firebase のサイトは公式とは別（`firebase.json` の `tsam-blog`）
@@ -29,7 +29,7 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 **www の部品を直したら両方流す。**
 
 `firebase.json` の URL の動き（`/startup`・`/startup/<slug>`・`/archives/<番号>`・末尾スラッシュ・301）は、
-2026-11-26 に Firebase の模擬環境（`firebase emulators:start --only hosting --project demo-tsam`）で確かめた。本番へのデプロイは未検証のまま。
+2026-11-26 に Firebase の模擬環境（`firebase emulators:start --only hosting --project demo-tsam`）で確かめ、切り替えのあと本番でも確かめた。
 
 確認はスマホ幅（390px）から。320 / 360 / 390 / 414 / 768 / 1024 / 1280 / 1440 / 1920px で横スクロールが無いこと。
 文字は 11.5px 以上、押すものは 44px 以上。
@@ -58,6 +58,7 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 
 - **活動の記録**：`www/src/data/activities.json`。旧サイトの News 180件（2019〜）を全部持っている。
   **選別はしない**（オーナー 2026-11-26「全部データ使おう。選別のほうがだるい」）。新しい活動は配列の頭に一件足すだけ。
+  書き方はこれまでの行に合わせる（「〜にて講演」「〜にてオンライン講演」「〜にてプログラムを審査」）。足したら main に入れて出す（`docs/deploy.md`）。
   トップの「最近の活動」には新しい順に8件（`site.ts` の `recentCount`）、`/record` には全件が年ごとに出る。
   本文の `[文字](URL)` はリンクになる
 - **経歴・著書**：`www/src/data/person.ts`。公式の表紙・llms.txt・教科書・ブログが、ここ一か所を読む
