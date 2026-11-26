@@ -12,12 +12,31 @@ DNS（お名前.com）と Firebase を触るのは Dots。サイトの中身と�
 | 段 | やること | 見た目の変化 | 状態 |
 |---|---|---|---|
 | A | 準備（メール用の名前を足す、Firebase にサイトを作る） | 何も変わらない | **済み**（2026-11-26、Dots） |
-| B | メールの宛先（MX）を、メール用の名前へ付け替える | 何も変わらない。届く先のサーバーは同じ | **オーナー了承**（2026-11-26 08:37）。Dots が、受信の実績を確かめてから進める（下の「2026-11-26 15:00 の現状」） |
+| B | メールの宛先（MX）を、メール用の名前へ付け替える | 何も変わらない。届く先のサーバーは同じ | **済み**（2026-11-26 17:49 保存、Claude。18:36 に Google・Cloudflare とも新しい値。18:37 に外からの着信を確認） |
 | C | 新しいサイトの中身を Firebase に出す | 何も変わらない（tsam.co.jp はまだ旧サイト） | **済み**（2026-11-26 08:52、Dots。版は 69f17dc）。全頁の検査は問題 0 |
-| D | サイトの行き先を Firebase へ向ける | **ここで新サイトに変わる** | **今日やる**（2026-11-26 17:33、オーナー「今日切り替えしちゃおう」）。B と、この版の出し直しのあと |
+| D | サイトの行き先を Firebase へ向ける | **ここで新サイトに変わる** | **今日やる**（2026-11-26 17:33、オーナー「今日切り替えしちゃおう」）。下ごしらえは 18:59 に済み。Firebase がブログの所有確認を通したら、公式とブログを同時に切り替える（下の「19:30 の現状」） |
 | E | 後片づけ（教科書の転送、検索への届け出） | off-notes.com/startup が tsam.co.jp/startup へ転送される | D のあと |
 
 どの段も、前の値に戻せば元に戻る（「戻し方」）。さくらのサーバーとその中の WordPress は止めないし、消さない。
+
+### 2026-11-26 19:30 の現状
+
+- **DNS の操作は Claude**（17:48 から。オーナーの Chrome でお名前.com Navi を開く。ログインはオーナー本人が押す）。Dots は Firebase の側の確認と、手元の Windows からの実測
+- **B は済み。**17:49 に MX を `10 mail.tsam.co.jp.` に保存。18:36 に Google と Cloudflare の両方が新しい値。
+  18:37 に外の配信サービスからの一通が `tsam.jp (Postfix)` に TLS 1.3 で入り、Google へ転送されたのを経路の見出しで確かめた（本文は読んでいない）
+- **D の下ごしらえ（Dots の案）を 18:56 と 18:59 に保存した。**行き先はどれも 160.16.226.77 のままで、見た目は変わらない
+  - `101`・`investors`・`test`・`wp` の CNAME を `tsam.co.jp` から `mail.tsam.co.jp` へ
+  - `blog` の CNAME（→ `tsam.co.jp`）を消し、A `160.16.226.77` と TXT `hosting-site=tsam-blog` を足した。
+    ブログの CNAME を先に Firebase へ向けると、Firebase が所有を確かめ終わるまで 404 になる（Dots が先回りの接続で確認）。TXT で先に所有確認を通しておけば、切り替えた瞬間から出る
+  - **お名前.com は、同じ名前に CNAME と A（や TXT）を同時に置けない**（追加のときに断られる。消す予定のチェックは見てくれない）。
+    消す保存と足す保存の二回に分けるしかなく、そのあいだ（18:56〜19:01 の数分）blog の名前が引けない時間ができた。引けなかった記憶が残るのは最長 300 秒（SOA の値）
+  - 旧 CNAME のあいだ、blog の TXT を引くと CNAME をたどって apex の `hosting-site=tsam-co-jp` が返っていた
+- 19:13、Google・Cloudflare とも新しい値。`https://blog.tsam.co.jp/archives/5641`・`https://tsam.co.jp/`・`https://101.tsam.co.jp/` は 200
+- **いま待っているもの**：Firebase がブログの所有確認を通すこと（19:14 の時点では、Firebase の側の DNS の記憶がまだ旧 CNAME。OWNERSHIP_MISSING）。
+  通ったら、登録済みの A 二つ（`tsam.co.jp` と `blog.tsam.co.jp`）の値を `199.36.158.100` に書き換える**一回の保存**で切り替える（blog を CNAME に戻すと、また二回の保存になって空白ができる）。
+  **公式とブログは同時に。**旧ブログは記事を `tsam.co.jp/wp-json` から読むので、公式だけ先に移すと旧ブログが壊れる
+- 合言葉の道の転送（14adeca）は、Dots が公開版に入れない考え（プレビューで 302 → 404 が見えても、更新が通る証明にならないため）。web.app に出ているのは 69f17dc のまま。
+  入れなければ、さくらの証明書の更新は tsam.co.jp と blog の分で止まる。2027-01-29 までに、サーバーを作った方に証明書を分けてもらう必要がある
 
 ### 2026-11-26 17:35 の決定（オーナー）
 
@@ -178,11 +197,8 @@ DNS（お名前.com）と Firebase を触るのは Dots。サイトの中身と�
 | 名前 | 種類 | いま | 変えたあと |
 |---|---|---|---|
 | tsam.co.jp | A | `160.16.226.77` | `199.36.158.100` |
-| blog.tsam.co.jp | CNAME | `tsam.co.jp.` | `tsam-blog.web.app.` |
-| 101.tsam.co.jp | CNAME | `tsam.co.jp.` | `mail.tsam.co.jp.` |
-| investors.tsam.co.jp | CNAME | `tsam.co.jp.` | `mail.tsam.co.jp.` |
-| test.tsam.co.jp | CNAME | `tsam.co.jp.` | `mail.tsam.co.jp.` |
-| wp.tsam.co.jp | CNAME | `tsam.co.jp.` | `mail.tsam.co.jp.` |
+| blog.tsam.co.jp | A（18:59 から。それまでは CNAME `tsam.co.jp.`） | `160.16.226.77` | `199.36.158.100`（Firebase がこの値を案内したら。TXT `hosting-site=tsam-blog` は残す） |
+| 101・investors・test・wp | CNAME | `mail.tsam.co.jp`（18:56 に付け替え済み） | そのまま |
 
 「変えたあと」の二つの値は、Firebase の画面が 2026-11-26 に示したもの（Dots の報告）。**当日、Firebase の画面にもう一度出して、その値を使う。**
 Firebase がほかのレコード（証明書の先取りのための TXT など）を求めたら、それも足す。
@@ -205,7 +221,7 @@ MX・`mail.tsam.co.jp`・TXT（SPF・Search Console・OpenAI・Firebase）は**�
 
 ### 戻し方
 
-`tsam.co.jp` の A を `160.16.226.77` に、`blog.tsam.co.jp` を `tsam.co.jp.` の CNAME に戻す。四つのサブドメインはそのままでも、元の値に戻してもよい（どちらもさくらに届く）。
+`tsam.co.jp` と `blog.tsam.co.jp` の A を `160.16.226.77` に戻す（blog は A のままでよい。CNAME に戻す必要はない）。四つのサブドメインはそのままでも、元の値に戻してもよい（どちらもさくらに届く）。
 さくらのサーバーは止めていないので、戻せば旧サイトがそのまま出る（旧サイトの証明書は 2027-01-29 まで有効）。
 MX と `mail.tsam.co.jp` はそのままでよい（どちらを向いていてもさくらに届く）。
 
