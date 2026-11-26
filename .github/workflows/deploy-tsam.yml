@@ -31,8 +31,9 @@ permissions:
 
 env:
   # どちらも秘密の値ではない（Google の側で、このリポジトリの main のこのファイルからしか使えないように絞ってある）
-  WIF_PROVIDER: ''
-  DEPLOY_SA: ''
+  WIF_PROVIDER: projects/1031066255762/locations/global/workloadIdentityPools/tsam-github/providers/github-tsam-main
+  DEPLOY_SA: tsam-github-deploy@my-retro-bbs.iam.gserviceaccount.com
+  FIREBASE_TOOLS: '15.9.1' # Dots が手元で出しているのと同じ版。上げるときは見本（preview）で一度確かめる
   PROJECT: my-retro-bbs
 
 jobs:
@@ -66,6 +67,9 @@ jobs:
         run: |
           npm ci
           npm run build
+      # 名乗りの証明は寿命が短いので、道具は名乗る前に入れておく
+      - name: Install firebase-tools
+        run: npm install -g "firebase-tools@$FIREBASE_TOOLS"
       - name: Google に名乗る（鍵は置かない）
         uses: google-github-actions/auth@v2
         with:
@@ -86,8 +90,8 @@ jobs:
           only=""
           for s in $sites; do only="${only:+$only,}hosting:$s"; done
           if [ "$TARGET" = "live" ]; then
-            npx firebase-tools deploy --only "$only" --project "$PROJECT" --non-interactive
+            firebase deploy --only "$only" --project "$PROJECT" --non-interactive
           else
             # 見本：3日で消える URL（*.web.app）に出す。本番には何も起きない
-            npx firebase-tools hosting:channel:deploy ci-preview --only "$(echo $sites | tr ' ' ',')" --project "$PROJECT" --expires 3d --non-interactive
+            firebase hosting:channel:deploy ci-preview --only "$(echo $sites | tr ' ' ',')" --project "$PROJECT" --expires 3d --non-interactive
           fi
