@@ -3,12 +3,13 @@
 // local は公式サイトの中から呼ぶとき（経歴への線を同じサイトの中の線にする）。中に書いたものは、経歴の文のあとに出る。
 import O from './O.astro';
 import { person, books } from '../data/person';
+import { fitStyle } from '../lib/fit';
 const { local = false } = Astro.props;
 ---
 <section class="sec sec--dark" id="author">
   <div class="sec__head">
     <p class="tag sec__round"><b>Written by</b></p>
-    <h2><span class="sec__ja">書いた人</span> <span class="display">Auth<O />r</span></h2>
+    <h2><span class="sec__ja">書いた人</span> <span class="display fit" style={fitStyle('Author')} data-swell>Auth<O />r</span></h2>
   </div>
   <div class="split">
     <div class="who rv">

@@ -7,6 +7,7 @@ import { years, books } from '../data/person';
 import { all, recent } from '../data/activities';
 import { pages as tbPages, NAME as tbName } from '../lib/startup';
 import { inline } from '../scripts/inline';
+import { fit, fitStyle } from '../lib/fit';
 
 // 最近の活動は、新しい順に頭の数件（site.recentCount）。全件は /record。
 const ymd = (d: string) => d.replaceAll('-', '.');
@@ -105,7 +106,7 @@ const jsonld = {
 
   <section class="hero" id="top">
     <h1 class="display hero__title" aria-label="Mentor to the next round.">
-      <span class="l">Mentor</span> <span class="l">to the</span> <span class="l l--last">next r<O hero />und.</span>
+      <span class="hero__a"><span class="l">Mentor</span> <span class="l">to the</span></span> <span class="hero__b" data-swell><span class="l">next</span> <span class="l">r<O hero />und.</span></span>
     </h1>
     <div class="hero__foot">
       <p class="hero__lead">株式会社tsamは<wbr>起業家をサポートする<wbr>会社です。</p>
@@ -118,10 +119,10 @@ const jsonld = {
     <div class="sec__head">
       <p class="tag sec__round"><b>Round 01</b></p>
       <span class="lamps" aria-hidden="true"><i class="on"></i><i></i><i></i></span>
-      <h2><span class="sec__ja">会社概要</span> <span class="display">C<O />mpany</span></h2>
+      <h2><span class="sec__ja">会社概要</span> <span class="display fit" style={fitStyle('Company')} data-swell>C<O />mpany</span></h2>
     </div>
     <div class="company">
-      <p class="statement rv">一人ひとりが自分の力で<wbr>生きていけるように。<br>自分の力で自分が描いた世界を<wbr>創れるように。</p>
+      <p class="statement">一人ひとりが自分の力で<wbr>生きていけるように。<br>自分の力で自分が描いた世界を<wbr>創れるように。</p>
       <div class="company__text rv">
         <p>tsamは起業家をサポートする会社です。起業における成功確率を少しでも高められるように、日々活動をしています。</p>
         <p>一人でも多くの人が夢を叶えられたらなと、私達は思っています。</p>
@@ -141,7 +142,7 @@ const jsonld = {
     <div class="sec__head">
       <p class="tag sec__round"><b>Round 02</b></p>
       <span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span>
-      <h2><span class="sec__ja">代表の経歴</span> <span class="display">Backgr<O />und</span></h2>
+      <h2><span class="sec__ja">代表の経歴</span> <span class="display fit" style={fitStyle('Background')} data-swell>Backgr<O />und</span></h2>
     </div>
     <div class="split">
       <div class="who rv">
@@ -203,7 +204,7 @@ const jsonld = {
     <div class="sec__head">
       <p class="tag sec__round"><b>Round 03</b></p>
       <span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
-      <h2><span class="sec__ja">お問い合わせ</span> <span class="display">C<O />ntact</span></h2>
+      <h2><span class="sec__ja">お問い合わせ</span> <span class="display fit" style={fitStyle('Contact')} data-swell>C<O />ntact</span></h2>
     </div>
     <div class="split">
       <div class="who rv">
@@ -216,8 +217,8 @@ const jsonld = {
 
   <section class="door" id="blog">
     <p class="tag"><b>Next round</b><span>ブログ</span></p>
-    <a class="door__link" href={site.blog} aria-label="Blog（blog.tsam.co.jp）">
-      <span class="display">Bl<O />g</span><span class="door__arrow" aria-hidden="true">↗</span>
+    <a class="door__link" href={site.blog} aria-label="Blog（blog.tsam.co.jp）" style={`--fit:${(fit('Blog') + 0.5).toFixed(3)}`}>
+      <span class="display" data-swell>Bl<O />g</span><span class="door__arrow" aria-hidden="true">↗</span>
     </a>
     <p class="door__ja">スタートアップ概論、投資家視点、ノウハウ、コラム。<span>blog.tsam.co.jp</span></p>
   </section>

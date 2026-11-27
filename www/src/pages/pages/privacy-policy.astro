@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import O from '../../components/O.astro';
+import { fitStyle } from '../../lib/fit';
 // 本文は旧サイト（WordPress の固定ページ privacy-policy、2022-01-25 更新）のまま。
 // 変えたのは、お問い合わせ窓口へのリンク先（/#section-contact → /#contact）だけ。
 ---
@@ -8,7 +9,7 @@ import O from '../../components/O.astro';
   <article class="page">
     <header class="page__head">
       <p class="tag"><b>Privacy</b><span>プライバシーポリシー</span></p>
-      <h1 class="display" aria-label="Privacy Policy">Privacy P<O />licy</h1>
+      <h1 class="display fit" style={fitStyle('Privacy Policy')} aria-label="Privacy Policy" data-swell>Privacy P<O />licy</h1>
     </header>
     <div class="prose">
       <p>株式会社tsam（以下、当社という）は「個人情報の保護に関する法律」に基づき、個人情報の適切な保護と利用に関する取組方針（プライバシーポリシー）を制定し、継続的に維持・改善してまいります。</p>

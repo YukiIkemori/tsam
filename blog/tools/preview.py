@@ -14,7 +14,7 @@ import glob, json, os, re, shutil, sys
 
 out = sys.argv[1]
 os.makedirs(out, exist_ok=True)
-FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200..400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap">'
+FONTS = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap">'
 JS = "<script>document.documentElement.classList.add('js');</script>"
 
 css = ''.join(open(f, encoding='utf-8').read() for f in sorted(glob.glob('dist/_astro/*.css')))

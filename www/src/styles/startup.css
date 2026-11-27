@@ -1,4 +1,4 @@
-/* tsam.co.jp/startup — 教科書「スタートアップのはじめ方」
+/* tsam.co.jp/startup — 教科書「スタートアップのはじめ方」（太さの試作で、罫を 2px の墨に、大きな字を枠いっぱいに）
    色・字・輪の決まりは global.css のまま。ここにあるのは教科書だけの部品。
    意匠は公式と同じ一つ：見出しの o が輪。教科書の八つの区分を「Round 01〜08」と数え、
    頁の頭にその区分の語（Intro・Money・Concept…）が大きく出て、その o に輪が座る。
@@ -8,7 +8,7 @@
 /* ───── 目次（/startup） ───── */
 .tb-hero { min-height: min(100svh, 860px); }
 .tb-hero__h1 { display: flex; flex-direction: column-reverse; font-weight: 400; }
-.tb-hero__word { font-size: clamp(5rem, 25vw, 27rem); line-height: 0.9; margin-left: -0.04em; padding-bottom: 0.04em; }
+.tb-hero__word { --cap: 34rem; line-height: 0.9; margin-left: -0.05em; padding-bottom: 0.04em; }
 .tb-hero__ja { margin-top: clamp(8px, 1.4vw, 20px); font-size: clamp(1.0625rem, 2.1vw, 1.75rem); letter-spacing: 0.14em; line-height: 1.5; }
 .tb-hero .hero__foot { margin-top: clamp(14px, 2.4vh, 28px); }
 
@@ -22,7 +22,6 @@
 
 .tb-round { padding-block: clamp(64px, 9vw, 128px) clamp(56px, 8vw, 112px); }
 .tb-round .sec__head { margin-bottom: clamp(28px, 4.4vw, 64px); }
-.tb-round .sec__head .display { font-size: clamp(2.6rem, 12.5vw, 9.5rem); }
 .tb-who { display: grid; gap: 10px; align-content: start; }
 .tb-who p:first-child { max-width: 24em; line-height: 1.8; word-break: auto-phrase; text-wrap: pretty; }
 @media (min-width: 900px) { .tb-who { position: sticky; top: 40px; align-self: start; } }
@@ -56,13 +55,14 @@
   .tb-rows--tag .tb-rows__go { grid-area: 1 / 2 / 4 / 3; }
 }
 
-.tb-door .door__link { font-size: clamp(3.6rem, 19.5vw, 17rem); }
+.tb-door .door__link { --cap: 20rem; }
 
 /* ───── 頁 ───── */
 .tb { padding: clamp(124px, 17vw, 200px) var(--pad) clamp(64px, 9vw, 128px); }
-.tb-word { font-size: clamp(3.4rem, 17vw, 13rem); margin-left: -0.045em; }
+.tb > header { container-type: inline-size; }
+.tb-word { --cap: 19rem; margin-left: -0.05em; }
 .tb-word a { text-decoration: none; }
-.tb-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 24px; margin-top: clamp(18px, 3vw, 40px); padding-top: 8px; border-top: 1px solid var(--ink); }
+.tb-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 24px; margin-top: clamp(14px, 2.4vw, 32px); padding-top: 8px; border-top: 2px solid var(--ink); }
 .tb-crumb { align-items: center; gap: 0.7em; }
 .tb-crumb a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
 .tb-crumb a:hover { text-decoration: underline; text-decoration-color: var(--coral); }
@@ -106,7 +106,7 @@
 /* 冒頭の答えと、要点 */
 .tb-main { min-width: 0; }
 .tb-lead { max-width: 37em; font-size: clamp(1.0625rem, 1.5vw, 1.3125rem); line-height: 2; letter-spacing: 0.01em; }
-.tb-points { max-width: 46rem; margin-top: clamp(28px, 4vw, 52px); padding: clamp(20px, 2.6vw, 34px) clamp(18px, 2.6vw, 36px) clamp(22px, 2.8vw, 36px); background: var(--paper); }
+.tb-points { max-width: 46rem; margin-top: clamp(28px, 4vw, 52px); padding: clamp(20px, 2.6vw, 34px) clamp(18px, 2.6vw, 36px) clamp(22px, 2.8vw, 36px); background: var(--paper); border-top: 2px solid var(--ink); }
 .tb-points .tag { margin-bottom: 14px; }
 .tb-points li { position: relative; padding-left: 1.75em; line-height: 1.85; }
 .tb-points li + li { margin-top: 0.7em; }
@@ -116,7 +116,7 @@
 .tb-text { max-width: 46em; margin-top: clamp(40px, 6vw, 80px); font-size: 1rem; line-height: 2; overflow-wrap: anywhere; }
 @media (min-width: 900px) { .tb-text { font-size: 1.0625rem; } }
 .tb-text > * + * { margin-top: 1.5em; }
-.tb-text h2 { margin-top: 3.4em; padding-top: 1em; border-top: 1px solid var(--ink); font-size: 1.375em; font-weight: 500; line-height: 1.6; scroll-margin-top: 24px; }
+.tb-text h2 { margin-top: 3.4em; padding-top: 1em; border-top: 2px solid var(--ink); font-size: 1.375em; font-weight: 500; line-height: 1.6; scroll-margin-top: 24px; }
 .tb-text > h2:first-child { margin-top: 0; }
 .tb-text h2 .no { display: block; margin-bottom: 0.5em; font-family: var(--mono); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.08em; line-height: 1.5; color: var(--mute); }
 .tb-text h3 { margin-top: 2.5em; font-size: 1.125em; font-weight: 500; line-height: 1.7; }
@@ -168,10 +168,10 @@
 .tb-text .faq dt::before { content: 'Q'; }
 .tb-text .faq dd::before { content: 'A'; color: var(--mute); }
 
-.tb-end { display: flex; flex-wrap: wrap; gap: 8px 36px; max-width: 46rem; margin-top: 3.6em; padding-top: 1.2em; border-top: 1px solid var(--ink); }
+.tb-end { display: flex; flex-wrap: wrap; gap: 8px 36px; max-width: 46rem; margin-top: 3.6em; padding-top: 1.2em; border-top: 2px solid var(--ink); }
 
 /* ───── 次の頁（Next round） ───── */
-.tb-next { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px var(--gap); padding-bottom: clamp(22px, 3.2vw, 44px); border-bottom: 1px solid var(--ink); text-decoration: none; }
+.tb-next { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px var(--gap); padding-bottom: clamp(22px, 3.2vw, 44px); border-bottom: 2px solid var(--ink); text-decoration: none; }
 .tb-next .tag { grid-column: 1 / -1; }
 .tb-next__title { max-width: 22em; font-size: clamp(1.4375rem, 3.5vw, 2.875rem); line-height: 1.5; letter-spacing: 0.02em; word-break: auto-phrase; overflow-wrap: anywhere; text-wrap: balance; }
 .tb-next__go { font-family: var(--display); font-weight: 200; font-size: clamp(2.6rem, 7vw, 6rem); line-height: 0.9; transition: translate 0.35s cubic-bezier(0.2, 0.7, 0.1, 1); }
@@ -183,7 +183,7 @@
 .tb-nav .more b { font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ───── 用語集 ───── */
-.tb-terms { margin-top: clamp(32px, 5vw, 64px); border-top: 1px solid var(--ink); }
+.tb-terms { margin-top: clamp(32px, 5vw, 64px); border-top: 2px solid var(--ink); }
 .tb-terms > div { display: grid; gap: 6px var(--gap); padding: 18px 0 14px; border-bottom: 1px solid var(--line); scroll-margin-top: 24px; }
 .tb-terms dt { font-size: 1.125rem; font-weight: 500; line-height: 1.6; }
 .tb-terms dt small { display: block; font-size: 0.75rem; font-weight: 400; letter-spacing: 0.08em; color: var(--mute); }

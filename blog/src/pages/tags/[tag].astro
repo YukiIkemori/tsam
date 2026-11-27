@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Word from '../../components/Word.astro';
+import { fitStyle } from '@www/lib/fit';
 import PostList from '../../components/PostList.astro';
 import { site, org } from '../../data/site';
 import { usedTags, byYear, abs } from '../../lib/posts';
@@ -48,7 +49,7 @@ const jsonld = {
     <header class="sec__head">
       <p class="tag sec__round"><b>Topic</b></p>
       <span class="record__count">{t.posts.length}本</span>
-      <h1><span class="sec__ja">{t.ja}</span> <span class="display fit" style={`--n:${t.en.length - 1}`}><Word word={t.en} /></span></h1>
+      <h1><span class="sec__ja">{t.ja}</span> <span class="display fit" style={fitStyle(t.en)} data-swell><Word word={t.en} /></span></h1>
     </header>
 
     <nav class="tagnav" aria-label="ほかのタグ">

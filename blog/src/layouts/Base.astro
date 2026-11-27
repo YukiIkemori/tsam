@@ -75,14 +75,16 @@ const year = new Date().getFullYear();
   <slot />
 </main>
 <footer class="foot">
-  <a class="logo" href="/" aria-label="tsam.blog トップへ"><Logo /><span class="logo__sub" aria-hidden="true">.blog</span></a>
-  <ul class="foot__links">
-    {site.social.map((s) => <li><a href={s.href} rel="noopener">{s.label}<span aria-hidden="true">↗</span></a></li>)}
-    <li><a href="/feed.xml">RSS</a></li>
-    <li><a href={`${site.home}/#contact`}>Contact<span aria-hidden="true">↗</span></a></li>
-    <li><a href={`${site.home}/pages/privacy-policy`}>Privacy Policy<span aria-hidden="true">↗</span></a></li>
-  </ul>
-  <p class="foot__copy">© {year} 株式会社tsam</p>
+  <div class="foot__bar">
+    <ul class="foot__links">
+      {site.social.map((s) => <li><a href={s.href} rel="noopener">{s.label}<span aria-hidden="true">↗</span></a></li>)}
+      <li><a href="/feed.xml">RSS</a></li>
+      <li><a href={`${site.home}/#contact`}>Contact<span aria-hidden="true">↗</span></a></li>
+      <li><a href={`${site.home}/pages/privacy-policy`}>Privacy Policy<span aria-hidden="true">↗</span></a></li>
+    </ul>
+    <p class="foot__copy">© {year} 株式会社tsam</p>
+  </div>
+  <a class="foot__mark" href="/" aria-label="tsam.blog トップへ"><Logo /><span class="logo__sub display" aria-hidden="true">.blog</span></a>
 </footer>
 <i class="traveler" aria-hidden="true"></i>
 <script>

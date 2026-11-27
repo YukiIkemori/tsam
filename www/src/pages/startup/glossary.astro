@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import O from '../../components/O.astro';
 import About from '../../components/startup/About.astro';
 import '../../styles/startup.css';
+import { fitStyle } from '../../lib/fit';
 import { site } from '../../data/site';
 import { person, org } from '../../data/person';
 import { glossary as g, inline, plain, jaDate, NAME, BASE, PUBLISHED } from '../../lib/startup';
@@ -60,7 +61,7 @@ const jsonld = {
     <header class="sec__head">
       <nav class="tag tb-crumb sec__round" aria-label="現在地"><a href={BASE}>Textbook</a><i aria-hidden="true">/</i><b>A–Z</b></nav>
       <span class="record__count">{g.terms.length}語</span>
-      <h1><span class="sec__ja">{g.h1}</span> <span class="display">Gl<O />ssary</span></h1>
+      <h1><span class="sec__ja">{g.h1}</span> <span class="display fit" style={fitStyle('Glossary')} data-swell>Gl<O />ssary</span></h1>
     </header>
 
     <p class="record__lead">{g.lead}</p>

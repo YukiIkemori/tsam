@@ -1,12 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import O from '@www/components/O.astro';
+import { fitStyle } from '@www/lib/fit';
 ---
 <Base title="ページが見つかりません｜tsam.blog" path="/404" noindex>
   <article class="page">
     <header class="page__head">
       <p class="tag"><b>404</b><span>ページが見つかりません</span></p>
-      <h1 class="display">N<O />t found</h1>
+      <h1 class="display fit" style={fitStyle('Not found')} data-swell>N<O />t found</h1>
     </header>
     <div class="prose">
       <p>お探しのページは、移動したか、なくなった可能性があります。</p>

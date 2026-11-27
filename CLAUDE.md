@@ -41,8 +41,12 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - **装置は一つ。見出しの「o」が輪になっている。**キャッチ「Mentor to the next round.」の round ＝輪。
   Company / Background / Contact / Blog にも o があるので、コーラルの輪が一つだけ、読んでいる見出しの o に座り、
   スクロールすると左端の細い線を伝って次の見出しの o へ渡る（`src/components/O.astro`、`src/scripts/ring.js`）
-- **大きな見出しを足すときは、o のある英単語にする。**輪の席が要るので
-- 輪の寸法は Jost の o の実測値（`global.css` の `.ring`）。**大きな欧文の書体を替えたら測り直す**
+- 大きな欧文の見出しはふだん極細（200）。o が座った一語だけが極太（800）に膨らみ、膨らみきったときに枠の左右に届く
+  （画面の中で太いのは、いつも一語だけ）。太さはスクロールの位置だけで決まり、時間では動かさない（行きと帰りで同じ見え方）。
+  動きを減らす設定のときと JS が動かないときは、全部の見出しが太く、o は全部コーラルのまま止まる
+- **大きな見出しを足すときは、o のある英単語にする。**輪の席が要るので。o は `<O />`、語には `class="display fit"`・
+  `style={fitStyle('語')}`（`src/lib/fit.ts`）・`data-swell` を付ける。枠になる親に `container-type: inline-size` が要る
+- o の位置と大きさは Jost の o の実測値（`ring.js` の `CX`・`CY`・`INK`）、語の幅は 800 の送り幅の表（`fit.ts`）。**大きな欧文の書体を替えたら測り直す**
 - コーラル `#d98577` は、明るい地の上では文字に使わない（コントラスト 2.6）。輪・線・灯りと、暗い地の上だけ
 - 節の札は「Round 01 / 02 / 03」、最後のブログへの扉が「Next round」。キャッチは「Mentor to the next round.」で確定
 - 天のメニューの「Textbook」は 640px 未満では出さない（五つ並ぶと 320px で溢れる）。狭い画面の入口は、経歴の節の「Textbook」と地のリンク

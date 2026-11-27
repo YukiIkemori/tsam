@@ -4,6 +4,7 @@ import O from '../components/O.astro';
 import { site } from '../data/site';
 import { all, years, firstYear, lastYear } from '../data/activities';
 import { inline } from '../scripts/inline';
+import { fitStyle } from '../lib/fit';
 
 // 活動の記録。旧サイトでトップに並んでいた News（2019〜）を、年ごとに全部出す頁。
 // 選別はしない（オーナー 2026-11-26）。トップには新しい数件だけを出し、ここへつなぐ。
@@ -42,7 +43,7 @@ const jsonld = {
     <header class="sec__head">
       <p class="tag sec__round"><b>{firstYear}–{lastYear}</b></p>
       <span class="record__count">{all.length}件</span>
-      <h1><span class="sec__ja">活動の記録</span> <span class="display">Rec<O />rd</span></h1>
+      <h1><span class="sec__ja">活動の記録</span> <span class="display fit" style={fitStyle('Record')} data-swell>Rec<O />rd</span></h1>
     </header>
 
     <p class="record__lead">講演、審査員、対談、就任、メディア掲載など、池森裕毅の活動を新しい順に並べています。</p>

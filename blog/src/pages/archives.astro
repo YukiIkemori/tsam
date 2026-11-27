@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import O from '@www/components/O.astro';
+import { fitStyle } from '@www/lib/fit';
 import PostList from '../components/PostList.astro';
 import { site, org } from '../data/site';
 import { posts, byYear, usedTags, firstYear, lastYear, abs } from '../lib/posts';
@@ -42,7 +43,7 @@ const jsonld = {
     <header class="sec__head">
       <p class="tag sec__round"><b>{firstYear}–{lastYear}</b></p>
       <span class="record__count">{posts.length}本</span>
-      <h1><span class="sec__ja">記事一覧</span> <span class="display">L<O />g</span></h1>
+      <h1><span class="sec__ja">記事一覧</span> <span class="display fit" style={fitStyle('Log')} data-swell>L<O />g</span></h1>
     </header>
 
     <nav class="jump" aria-label="年で飛ぶ">

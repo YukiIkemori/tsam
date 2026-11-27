@@ -6,6 +6,7 @@ import Lamps from '../../components/startup/Lamps.astro';
 import Rows from '../../components/startup/Rows.astro';
 import About from '../../components/startup/About.astro';
 import '../../styles/startup.css';
+import { fit, fitStyle } from '../../lib/fit';
 import { site } from '../../data/site';
 import { person, org } from '../../data/person';
 import { pages, rounds, inRound, index, glossary, no, jaDate, NAME, BASE, PUBLISHED } from '../../lib/startup';
@@ -52,7 +53,7 @@ const jsonld = {
 <Base title={index.title} description={index.desc} path={BASE} jsonld={jsonld} image={`${BASE}/og/index.jpg`} imageAlt={`${NAME}。起業の教科書`}>
 
   <section class="hero tb-hero" id="top">
-    <h1 class="tb-hero__h1"><span class="tb-hero__ja">{index.h1}</span> <span class="display tb-hero__word">Textb<O hero />ok</span></h1>
+    <h1 class="tb-hero__h1"><span class="tb-hero__ja">{index.h1}</span> <span class="display fit tb-hero__word" style={fitStyle('Textbook')} data-swell>Textb<O hero />ok</span></h1>
     <div class="hero__foot">
       <p class="hero__lead">起業を、問い一つにつき一頁で。</p>
       <p class="tag"><b>全{total}頁</b><span>Round 01–08</span></p>
@@ -79,7 +80,7 @@ const jsonld = {
       <div class="sec__head">
         <p class="tag sec__round"><b>Round {no(r.n)}</b></p>
         <Lamps n={r.n} />
-        <h2><span class="sec__ja">{r.ja}</span> <span class="display"><Word word={r.en} /></span></h2>
+        <h2><span class="sec__ja">{r.ja}</span> <span class="display fit" style={fitStyle(r.en)} data-swell><Word word={r.en} /></span></h2>
       </div>
       <div class="split">
         <div class="tb-who rv">
@@ -93,8 +94,8 @@ const jsonld = {
 
   <section class="door tb-door" id="glossary">
     <p class="tag"><b>A–Z</b><span>用語集</span></p>
-    <a class="door__link" href={glossary.url} aria-label={glossary.h1}>
-      <span class="display">Gl<O />ssary</span><span class="door__arrow" aria-hidden="true">→</span>
+    <a class="door__link" href={glossary.url} aria-label={glossary.h1} style={`--fit:${(fit('Glossary') + 0.5).toFixed(3)}`}>
+      <span class="display" data-swell>Gl<O />ssary</span><span class="door__arrow" aria-hidden="true">→</span>
     </a>
     <p class="door__ja">この教科書に出てくる言葉を、一行ずつ。<span>{glossary.terms.length}語</span></p>
   </section>

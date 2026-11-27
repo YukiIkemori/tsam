@@ -6,6 +6,7 @@ import Lamps from '../../components/startup/Lamps.astro';
 import Rows from '../../components/startup/Rows.astro';
 import About from '../../components/startup/About.astro';
 import '../../styles/startup.css';
+import { fitStyle } from '../../lib/fit';
 import { site } from '../../data/site';
 import { person, org } from '../../data/person';
 import { pages, bySlug, glossary, no, jaDate, NAME, BASE, PUBLISHED } from '../../lib/startup';
@@ -73,7 +74,7 @@ const jsonld = {
 <Base title={p.title} description={p.desc} path={p.url} jsonld={jsonld} image={image} imageAlt={`${p.h1}（${NAME}）`} article={{ published: `${PUBLISHED}T10:00:00+09:00`, modified: `${p.mod}T10:00:00+09:00`, section: r.ja }}>
   <article class="tb">
     <header>
-      <p class="tb-word display"><a href={`${BASE}#r${r.n}`} aria-label={`Round ${no(r.n)} ${r.ja}の頁の一覧`}><Word word={r.en} /></a></p>
+      <p class="tb-word display fit" style={fitStyle(r.en)} data-swell><a href={`${BASE}#r${r.n}`} aria-label={`Round ${no(r.n)} ${r.ja}の頁の一覧`}><Word word={r.en} /></a></p>
       <div class="tb-bar">
         <nav class="tag tb-crumb" aria-label="現在地">
           <a href={BASE}>Textbook</a><i aria-hidden="true">/</i><a href={`${BASE}#r${r.n}`}><b>Round {no(r.n)}</b></a><span>{r.ja}</span>
@@ -115,7 +116,7 @@ const jsonld = {
     <div class="sec__head">
       <p class="tag sec__round"><b>{next ? `Round ${no(next.round.n)}` : 'Glossary'}</b></p>
       <Lamps n={next ? next.round.n : 8} />
-      <h2><span class="sec__ja">次の頁</span> <span class="display">Next r<O />und</span></h2>
+      <h2><span class="sec__ja">次の頁</span> <span class="display fit" style={fitStyle('Next round')} data-swell>Next r<O />und</span></h2>
     </div>
     {next ? (
       <a class="tb-next" href={next.url}>

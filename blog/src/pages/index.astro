@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import O from '@www/components/O.astro';
+import { fitStyle } from '@www/lib/fit';
 import PostList from '../components/PostList.astro';
 import Author from '../components/Author.astro';
 import { site, author, org } from '../data/site';
@@ -43,7 +44,7 @@ const jsonld = {
 <Base title={title} description={description} path="/" jsonld={jsonld}>
 
   <section class="hero bhero" id="top">
-    <h1 class="display bhero__title"><span class="vh">tsam.</span>Bl<O hero />g</h1>
+    <h1 class="display fit bhero__title" style={fitStyle('Blog')} data-swell><span class="vh">tsam.</span>Bl<O hero />g</h1>
     <div class="hero__foot">
       <p class="hero__lead">起業家に向けた<wbr>チップス、<wbr>コラムなど。</p>
       <p class="tag hero__place"><b>{posts.length} articles</b><span>{firstYear}–{lastYear}</span></p>
@@ -53,7 +54,7 @@ const jsonld = {
 
   <div class="sec bsec">
     <section class="split split--sub split--first" id="posts">
-      <h2 class="sub rv"><span class="display">P<O />sts</span><small>最新の記事</small></h2>
+      <h2 class="sub rv"><span class="display" data-swell>P<O />sts</span><small>最新の記事</small></h2>
       <div>
         <PostList items={latest} excerpt />
         <a class="more more--all" href="/archives">すべての記事を見る<small>{posts.length}本</small><span aria-hidden="true">→</span></a>
@@ -61,7 +62,7 @@ const jsonld = {
     </section>
 
     <section class="split split--sub" id="topics">
-      <h2 class="sub rv"><span class="display">T<O />pics</span><small>タグ</small></h2>
+      <h2 class="sub rv"><span class="display" data-swell>T<O />pics</span><small>タグ</small></h2>
       <ul class="topics rv">
         {usedTags.map((t) => (
           <li><a href={`/tags/${t.slug}`}><span class="topics__ja">{t.ja}</span><span class="topics__en display">{t.en.replace('|', 'o')}</span><span class="topics__n">{t.posts.length}</span></a></li>

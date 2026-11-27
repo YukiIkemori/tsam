@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import O from '@www/components/O.astro';
 import Word from '../../components/Word.astro';
+import { fitStyle } from '@www/lib/fit';
 import PostList from '../../components/PostList.astro';
 import Author from '../../components/Author.astro';
 import { site, author, org } from '../../data/site';
@@ -97,7 +98,7 @@ const jsonld = {
 <Base title={p.title} description={p.description} path={p.url} jsonld={jsonld} image={p.og} article={{ published: p.date, modified: p.modified, section: tag?.ja }} tweet={p.hasTweet}>
   <article class="post">
     <header class="post__head">
-      <p class="post__word display fit" style={`--n:${word.length - 1}`}>
+      <p class="post__word display fit" style={fitStyle(word)} data-swell>
         {tag ? <a href={`/tags/${tag.slug}`} aria-label={`${tag.ja}の記事一覧`}><Word word={word} /></a> : <a href="/" aria-label="tsam.blog トップへ"><Word word={word} /></a>}
       </p>
       <div class="post__bar">
@@ -143,7 +144,7 @@ const jsonld = {
   <section class="sec sec--paper" id="next">
     <div class="sec__head">
       <p class="tag sec__round"><b>Related</b></p>
-      <h2><span class="sec__ja">関連記事</span> <span class="display">Next r<O />und</span></h2>
+      <h2><span class="sec__ja">関連記事</span> <span class="display fit" style={fitStyle('Next round')} data-swell>Next r<O />und</span></h2>
     </div>
     <PostList items={next} excerpt />
     <a class="more more--all" href="/archives">すべての記事を見る<small>{posts.length}本</small><span aria-hidden="true">→</span></a>
