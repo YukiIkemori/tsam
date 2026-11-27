@@ -20,6 +20,5 @@ export const site = {
   social: [
     { label: 'X', href: 'https://twitter.com/yuki_ikemori' },
     { label: 'Facebook', href: 'https://www.facebook.com/yuki.ikemori/' },
-    { label: 'YouTube', href: 'https://www.youtube.com/channel/UCttfFInncJTRulFH8xSY4tQ' },
   ],
 };
