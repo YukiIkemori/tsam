@@ -1,0 +1,6 @@
+---
+// 矢印。Jost に矢印の字が無いので、線で描く（角を丸めない、細い線）。向きは e（→）・ne（↗）・s（↓）・w（←）。
+const { dir = 'e' } = Astro.props;
+const rot = { e: 0, ne: -45, s: 90, w: 180 }[dir as 'e' | 'ne' | 's' | 'w'];
+---
+<svg class="arw" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={rot ? `rotate:${rot}deg` : undefined}><path d="M2 12h20M13.5 3.5 22 12l-8.5 8.5" fill="none" stroke="currentColor" stroke-linejoin="miter" stroke-miterlimit="8" vector-effect="non-scaling-stroke"/></svg>

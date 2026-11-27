@@ -1,7 +1,8 @@
 ---
-// 「C|ncept」のように「|」で o の位置を示した語を、輪の o 付きで出す。
+// 「C|ncept」のように「|」で o の位置を示した語を、輪の o 付きで出す（大きさは置かれた場所の字のまま）。
+// 幅いっぱいに組むときは Fit.astro を使う。
 import O from './O.astro';
-const { word, hero = false } = Astro.props;
+const { word, hero = false, seat = true } = Astro.props;
 const [a, b] = String(word).split('|');
 ---
-{a}<O hero={hero} />{b}
+{a}{b !== undefined && <O hero={hero} seat={seat} />}{b}

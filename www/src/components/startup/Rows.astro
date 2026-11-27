@@ -1,5 +1,6 @@
 ---
 // 頁の一覧。目次では通し番号、「あわせて読む」では区分の札（Round 05）を頭に出す。
+import Arrow from '../Arrow.astro';
 import { pages, no, type Page } from '../../lib/startup';
 interface Props { items: Page[]; tag?: boolean }
 const { items, tag = false } = Astro.props;
@@ -11,7 +12,7 @@ const { items, tag = false } = Astro.props;
         <span class="tb-rows__n">{tag ? `Round ${no(p.round.n)}` : no(pages.indexOf(p) + 1)}</span>
         <span class="tb-rows__t">{p.h1}</span>
         <span class="tb-rows__b">{p.blurb}</span>
-        <span class="tb-rows__go" aria-hidden="true">→</span>
+        <span class="tb-rows__go" aria-hidden="true"><Arrow /></span>
       </a>
     </li>
   ))}

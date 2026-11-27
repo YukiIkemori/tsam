@@ -1,0 +1,14 @@
+---
+// 幅いっぱいに組む大きな欧文。このサイトの大きな字はどれもこれで出す。
+// 「C|mpany」の「|」が輪になる o。字の大きさは「置き場所の幅 ÷ その語の墨の幅」で、CSS だけで決まる
+// （墨の幅は build のときに書体から実測する。src/lib/fit.ts）。だから短い語ほど大きく、長い語ほど小さい。
+//   w      … 太さ。既定は極太（900）。細い見出しは 200
+//   swell  … 画面に入ったとき（節の頭では、輪が着いたとき）に、極細から太っていく
+//   seat   … false で、輪が渡ってくる席にしない
+import O from './O.astro';
+import { fitVars, HEAVY } from '../lib/fit';
+interface Props { word: string; w?: number; hero?: boolean; swell?: boolean; seat?: boolean; class?: string }
+const { word, w = HEAVY, hero = false, swell = false, seat = true, class: cls } = Astro.props;
+const [a, b] = String(word).split('|');
+---
+<span class:list={['fit', cls, { swell }]} style={fitVars(String(word), w)}>{a}{b !== undefined && <O hero={hero} seat={seat} />}{b}</span>

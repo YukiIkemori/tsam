@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
-import O from '../../components/O.astro';
+import Fit from '../../components/Fit.astro';
+import Go from '../../components/Go.astro';
+import Arrow from '../../components/Arrow.astro';
 import About from '../../components/startup/About.astro';
 import '../../styles/startup.css';
 import { site } from '../../data/site';
@@ -60,7 +62,7 @@ const jsonld = {
     <header class="sec__head">
       <nav class="tag tb-crumb sec__round" aria-label="現在地"><a href={BASE}>Textbook</a><i aria-hidden="true">/</i><b>A–Z</b></nav>
       <span class="record__count">{g.terms.length}語</span>
-      <h1><span class="sec__ja">{g.h1}</span> <span class="display">Gl<O />ssary</span></h1>
+      <h1><span class="sec__ja">{g.h1}</span> <Fit word="Gl|ssary" swell /></h1>
     </header>
 
     <p class="record__lead">{g.lead}</p>
@@ -70,12 +72,12 @@ const jsonld = {
       {g.terms.map((t) => (
         <div id={t.id}>
           <dt>{t.term}{t.alt && <small>{t.alt}</small>}</dt>
-          <dd><span set:html={inline(t.def)} /><a class="tb-terms__more" href={t.page.url}>{t.page.h1}<span aria-hidden="true">→</span></a></dd>
+          <dd><span set:html={inline(t.def)} /><a class="tb-terms__more" href={t.page.url}>{t.page.h1}<Arrow /></a></dd>
         </div>
       ))}
     </dl>
 
-    <a class="back" href={BASE}>← {NAME} 目次</a>
+    <a class="back" href={BASE}><Go dir="w" />{NAME} 目次</a>
   </article>
 
   <About />

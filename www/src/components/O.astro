@@ -1,11 +1,12 @@
 ---
-// 見出しの「o」を輪に置き換える部品。このサイトの意匠はこれ一つ。
-// 「Mentor to the next round.」の round ＝輪。Company / Background / Contact / Blog にも o があるので、
-// コーラルの輪が一つだけ、読んでいる見出しの o に座る（動かしているのは src/scripts/ring.js）。
-// 輪の寸法は Jost の o を実測した値（global.css の .ring）。文字の o は読み上げ用に残してある。
-const { hero = false } = Astro.props;
-const orbits = [1.42, 2.5, 4.05, 6.3, 9.6, 14.4];
+// 見出しの「o」を輪に置き換える部品。このサイトの輪はこれ一つ。
+// 「Mentor to the next round.」の round ＝輪。大きな見出しにはどれも o があり、コーラルの輪が一つだけ、
+// 読んでいる見出しの o に座る（動かしているのは src/scripts/ring.js）。
+// 輪は太さによらず同じ形の正円（寸法は global.css の .ring と src/lib/fit.ts の RING）。文字の o は読み上げ用に残してある。
+// seat を false にすると、輪が渡ってくる席にはしない（メニューや一覧の中の、飾りの輪）。
+const { hero = false, seat = true } = Astro.props;
+const orbits = [1.42, 2.5, 4.05, 6.3, 9.6];
 ---
-<span class="o" data-slot><span class="vh">o</span><i class="ring" aria-hidden="true"><i class="orbit"></i>{hero && (
+<span class="o" data-slot={seat ? '' : undefined}><span class="vh">o</span><i class="ring" aria-hidden="true"><i class="orbit"></i>{hero && (
   <i class="rings">{orbits.map((d, i) => <i style={`--d:${d}em;--t:${46 + i * 23}s;--a:${(i * 67) % 360}deg`} class={i % 2 ? 'rev' : ''}></i>)}</i>
 )}</i></span>

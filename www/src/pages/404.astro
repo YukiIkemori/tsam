@@ -1,16 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
-import O from '../components/O.astro';
+import Fit from '../components/Fit.astro';
+import Go from '../components/Go.astro';
 ---
 <Base title="ページが見つかりません｜株式会社tsam" path="/404" noindex>
   <article class="page">
     <header class="page__head">
       <p class="tag"><b>404</b><span>ページが見つかりません</span></p>
-      <h1 class="display" aria-label="Not found">N<O />t found</h1>
+      <h1 aria-label="Not found"><Fit word="N|t found" swell /></h1>
     </header>
     <div class="prose">
       <p>お探しのページは、移動したか、なくなりました。</p>
-      <a class="back" href="/">← Home</a>
+      <a class="back" href="/"><Go dir="w" />Home</a>
     </div>
   </article>
 </Base>

@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import O from '../components/O.astro';
+import Fit from '../components/Fit.astro';
+import Go from '../components/Go.astro';
 import { site } from '../data/site';
 import { all, years, firstYear, lastYear } from '../data/activities';
 import { inline } from '../scripts/inline';
@@ -8,6 +9,7 @@ import { inline } from '../scripts/inline';
 // 活動の記録。旧サイトでトップに並んでいた News（2019〜）を、年ごとに全部出す頁。
 // 選別はしない（オーナー 2026-11-26）。トップには新しい数件だけを出し、ここへつなぐ。
 // 大きな字は「Record」。このサイトの見出しは o のある語にする決まり（輪の席が要る）。
+// 年の数字は極細で待っていて、その年を読んでいるあいだだけ太る（data-focus。動かしているのは scripts/reveal.js）。
 const md = (d: string) => `${Number(d.slice(5, 7))}.${d.slice(8, 10)}`;
 const title = '講演・審査員・メディア掲載の記録｜池森裕毅（株式会社tsam）';
 const description = `株式会社tsam代表・池森裕毅の活動の記録。${firstYear}年から${lastYear}年までの講演、審査員、対談、就任、メディア掲載など全${all.length}件を、年ごとに新しい順でまとめています。講演や審査員のご依頼はお問い合わせフォームから。`;
@@ -42,7 +44,7 @@ const jsonld = {
     <header class="sec__head">
       <p class="tag sec__round"><b>{firstYear}–{lastYear}</b></p>
       <span class="record__count">{all.length}件</span>
-      <h1><span class="sec__ja">活動の記録</span> <span class="display">Rec<O />rd</span></h1>
+      <h1><span class="sec__ja">活動の記録</span> <Fit word="Rec|rd" swell /></h1>
     </header>
 
     <p class="record__lead">講演、審査員、対談、就任、メディア掲載など、池森裕毅の活動を新しい順に並べています。</p>
@@ -51,8 +53,8 @@ const jsonld = {
     </nav>
 
     {years.map((y) => (
-      <section class="split split--year">
-        <h2 class="yr" id={`y${y.year}`}><span class="display">{y.year}</span><small>{y.items.length}件</small></h2>
+      <section class="split split--year" data-focus>
+        <h2 class="yr" id={`y${y.year}`}><Fit word={String(y.year)} class="yr__n" /><small>{y.items.length}件</small></h2>
         <ol class="recent recent--year rv">
           {y.items.map((a) => (
             <li>
@@ -67,6 +69,6 @@ const jsonld = {
       </section>
     ))}
 
-    <a class="back" href="/">← Home</a>
+    <a class="back" href="/"><Go dir="w" />Home</a>
   </article>
 </Base>

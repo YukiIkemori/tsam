@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
-import O from '../../components/O.astro';
-import Word from '../../components/Word.astro';
+import Fit from '../../components/Fit.astro';
+import Go from '../../components/Go.astro';
 import Lamps from '../../components/startup/Lamps.astro';
 import Rows from '../../components/startup/Rows.astro';
 import About from '../../components/startup/About.astro';
@@ -9,10 +9,11 @@ import '../../styles/startup.css';
 import { site } from '../../data/site';
 import { person, org } from '../../data/person';
 import { pages, bySlug, glossary, no, jaDate, NAME, BASE, PUBLISHED } from '../../lib/startup';
+import { THIN } from '../../lib/fit';
 
 // 教科書の頁。URL は /startup/<slug>（off-notes.com/startup/<slug>/ から引っ越した。slug は変えない）。
 // 頭の大きな字は区分の語（Round 05 なら Model）で、その o に輪が座る。読み進めるあいだ輪は左端の線を降りていき、
-// 読み終わりの「Next round」（次の頁）の o に着く。
+// 読み終わりの「Next round」（次の頁）の o に着く。着くと、そこから次の頁への節が円く開く。
 export function getStaticPaths() {
   return pages.map((p) => ({ params: { slug: p.slug }, props: { p } }));
 }
@@ -72,15 +73,17 @@ const jsonld = {
 ---
 <Base title={p.title} description={p.desc} path={p.url} jsonld={jsonld} image={image} imageAlt={`${p.h1}（${NAME}）`} article={{ published: `${PUBLISHED}T10:00:00+09:00`, modified: `${p.mod}T10:00:00+09:00`, section: r.ja }}>
   <article class="tb">
-    <header>
-      <p class="tb-word display"><a href={`${BASE}#r${r.n}`} aria-label={`Round ${no(r.n)} ${r.ja}の頁の一覧`}><Word word={r.en} /></a></p>
+    <header class="tb-head">
       <div class="tb-bar">
         <nav class="tag tb-crumb" aria-label="現在地">
           <a href={BASE}>Textbook</a><i aria-hidden="true">/</i><a href={`${BASE}#r${r.n}`}><b>Round {no(r.n)}</b></a><span>{r.ja}</span>
         </nav>
         <Lamps n={r.n} />
       </div>
-      <h1 class="tb-title"><span>{ha}</span>{hb && <span class="tb-title__b">{hb}</span>}</h1>
+      <div class="split tb-top">
+        <p class="tb-word"><a href={`${BASE}#r${r.n}`} aria-label={`Round ${no(r.n)} ${r.ja}の頁の一覧`}><Fit word={r.en} swell /></a></p>
+        <h1 class="tb-title"><span>{ha}</span>{hb && <span class="tb-title__b">{hb}</span>}</h1>
+      </div>
     </header>
 
     <div class="split tb-cols">
@@ -104,39 +107,39 @@ const jsonld = {
         </section>
         <div class="tb-text" set:html={p.html} />
         <p class="tb-end">
-          <a class="more" href={BASE}>目次<small>全{pages.length + 2}頁</small><span aria-hidden="true">→</span></a>
-          <a class="more" href={glossary.url}>用語集<small>{glossary.terms.length}語</small><span aria-hidden="true">→</span></a>
+          <a class="more" href={BASE}>目次<small>全{pages.length + 2}頁</small><Go /></a>
+          <a class="more" href={glossary.url}>用語集<small>{glossary.terms.length}語</small><Go /></a>
         </p>
       </div>
     </div>
   </article>
 
-  <section class="sec sec--paper" id="next">
+  <section class="sec sec--paper" id="next" data-iris>
     <div class="sec__head">
       <p class="tag sec__round"><b>{next ? `Round ${no(next.round.n)}` : 'Glossary'}</b></p>
       <Lamps n={next ? next.round.n : 8} />
-      <h2><span class="sec__ja">次の頁</span> <span class="display">Next r<O />und</span></h2>
+      <h2><span class="sec__ja">次の頁</span> <Fit word="Next r|und" swell /></h2>
     </div>
     {next ? (
       <a class="tb-next" href={next.url}>
         <span class="tag"><b>{no(k + 2)}</b><span>{next.round.ja}</span></span>
         <span class="tb-next__title">{next.h1}</span>
-        <span class="tb-next__go" aria-hidden="true">→</span>
+        <Go class="tb-next__go" />
       </a>
     ) : (
       <a class="tb-next" href={glossary.url}>
         <span class="tag"><b>A–Z</b><span>{glossary.terms.length}語</span></span>
         <span class="tb-next__title">{glossary.h1}</span>
-        <span class="tb-next__go" aria-hidden="true">→</span>
+        <Go class="tb-next__go" />
       </a>
     )}
     <div class="split tb-rel">
-      <h3 class="sub rv"><span class="display">Related</span><small>あわせて読む</small></h3>
+      <h3 class="sub rv"><Fit word="Related" w={THIN} /><small>あわせて読む</small></h3>
       <Rows items={related} tag />
     </div>
     <p class="tb-nav">
-      {prev ? <a class="more" href={prev.url}><span aria-hidden="true">←</span>前の頁</a> : <span></span>}
-      <a class="more" href={BASE}>{NAME} 目次<span aria-hidden="true">→</span></a>
+      {prev ? <a class="more" href={prev.url}><Go dir="w" />前の頁</a> : <span></span>}
+      <a class="more" href={BASE}>{NAME} 目次<Go /></a>
     </p>
   </section>
 

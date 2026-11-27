@@ -2,6 +2,9 @@
 import '@fontsource-variable/jost/wght.css';
 import '../styles/global.css';
 import Logo from '../components/Logo.astro';
+import Arrow from '../components/Arrow.astro';
+import Boot from '../components/Boot.astro';
+import Menu from '../components/Menu.astro';
 import { site } from '../data/site';
 import jost from '@fontsource-variable/jost/files/jost-latin-wght-normal.woff2?url';
 
@@ -22,6 +25,20 @@ const og = new URL(image ?? '/ogp.jpg', site.url).href;
 const ogAlt = imageAlt ?? (image ? title : 'Mentor to the next round. の文字。round の o がコーラル色の輪になっている');
 const h = (id: string) => (home ? `#${id}` : `/#${id}`);
 const year = new Date().getFullYear();
+
+// 全体のメニュー（右上の円い押しどころから開く）。語は節の見出しと同じもの
+const menu = [
+  { word: 'C|mpany', ja: '会社概要', href: h('company') },
+  { word: 'Backgr|und', ja: '代表の経歴', href: h('background') },
+  { word: 'C|ntact', ja: 'お問い合わせ', href: h('contact') },
+  { word: 'Textb|ok', ja: '教科書', href: '/startup', current: path.startsWith('/startup') },
+  { word: 'Bl|g', ja: 'ブログ', href: site.blog, out: true },
+];
+const minor = [
+  { label: 'Record', href: '/record' },
+  { label: 'Privacy Policy', href: '/pages/privacy-policy' },
+  ...site.social.map((s) => ({ ...s, out: true })),
+];
 ---
 <!doctype html>
 <html lang="ja">
@@ -57,9 +74,9 @@ const year = new Date().getFullYear();
 <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap">
 {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
-<script is:inline>document.documentElement.classList.add('js');</script>
+<Boot />
 {site.ga && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${site.ga}`}></script>}
 {site.ga && <script is:inline define:vars={{ ga: site.ga }}>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',ga);</script>}
 </head>
@@ -70,24 +87,28 @@ const year = new Date().getFullYear();
     <a href={h('company')}>Company</a>
     <a href={h('background')}>Background</a>
     <a href={h('contact')}>Contact</a>
-    <a class="nav__wide" href="/startup">Textbook</a>
-    <a href={site.blog}>Blog<span aria-hidden="true">↗</span></a>
+    <a href="/startup">Textbook</a>
+    <a href={site.blog}>Blog<Arrow dir="ne" /></a>
   </nav>
 </header>
+<Menu items={menu} minor={minor} />
 <main>
   <slot />
 </main>
 <footer class="foot">
-  <a class="logo" href="/" aria-label="tsam トップへ"><Logo /></a>
-  <ul class="foot__links">
-    {site.social.map((s) => <li><a href={s.href} rel="noopener">{s.label}<span aria-hidden="true">↗</span></a></li>)}
-    <li><a href="/startup">Textbook</a></li>
-    <li><a href="/record">Record</a></li>
-    <li><a href="/pages/privacy-policy">Privacy Policy</a></li>
-  </ul>
-  <p class="foot__copy">© {year} 株式会社tsam</p>
+  <div class="foot__row">
+    <ul class="foot__links">
+      {site.social.map((s) => <li><a href={s.href} rel="noopener">{s.label}<Arrow dir="ne" /></a></li>)}
+      <li><a href="/startup">Textbook</a></li>
+      <li><a href="/record">Record</a></li>
+      <li><a href="/pages/privacy-policy">Privacy Policy</a></li>
+    </ul>
+    <p class="foot__copy">© {year} 株式会社tsam</p>
+  </div>
+  <a class="foot__mark" href="/" aria-label="tsam トップへ"><Logo /></a>
 </footer>
 <i class="traveler" aria-hidden="true"></i>
+<i class="shock" aria-hidden="true"></i>
 <script>
   import '../scripts/ring.js';
   import '../scripts/reveal.js';

@@ -1,5 +1,6 @@
 ---
 import { site } from '../data/site';
+import Arrow from './Arrow.astro';
 // 送信先は site.contactEndpoint。空のあいだはメールアプリを開く（下の script）。
 // site.turnstileSiteKey が入っていれば、機械でないことの確認に Cloudflare Turnstile を使う（受け口がその版のとき）。
 const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
@@ -30,7 +31,7 @@ const topics = ['講演', '審査員', 'コンサルティング', 'その他'];
   <p class="hp" aria-hidden="true"><label>このらんは空のままにしてください<input type="text" name="website" tabindex="-1" autocomplete="off"></label></p>
   <div class="form__check field--wide" data-check hidden></div>
   <div class="form__end field--wide">
-    <button class="send" type="submit"><span>送信</span><i aria-hidden="true">→</i></button>
+    <button class="send" type="submit"><span>送信</span><Arrow /></button>
     <p class="form__note">お送りいただいた内容は、<a href="/pages/privacy-policy">プライバシーポリシー</a>に沿って取り扱います。</p>
   </div>
   <p class="form__status field--wide" role="status" aria-live="polite"></p>

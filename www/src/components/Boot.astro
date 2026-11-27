@@ -1,0 +1,30 @@
+---
+// 頁の頭で、描く前に済ませること。公式とブログの両方の <head> に置く。
+// ・html に js を付ける（動きの下ごしらえ。global.css の .js …）。4秒たっても本体の JS が動いていなければ外す
+//   （JS が届かなかったときに、細いままの見出しや、出てこない段を残さない）
+// ・頁を渡るとき、押した場所から次の頁が円く開く（global.css の @view-transition）。押した場所を次の頁へ申し送る
+---
+<script is:inline>
+(function () {
+  var d = document.documentElement;
+  d.classList.add('js');
+  setTimeout(function () { if (!window.__tsam) d.classList.remove('js'); }, 4000);
+  addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    try { sessionStorage.setItem('tsam-vt', [e.clientX, e.clientY, Date.now()].join(',')); } catch (_) {}
+  }, true);
+  addEventListener('pagereveal', function (e) {
+    if (!e.viewTransition) return;
+    var p = null;
+    try { p = sessionStorage.getItem('tsam-vt'); sessionStorage.removeItem('tsam-vt'); } catch (_) {}
+    p = p ? p.split(',') : [];
+    if (p.length === 3 && Date.now() - p[2] < 4000 && (+p[0] || +p[1])) {
+      d.style.setProperty('--vx', p[0] + 'px');
+      d.style.setProperty('--vy', p[1] + 'px');
+    }
+    d.classList.add('vt');
+    e.viewTransition.finished.then(function () { d.classList.remove('vt'); }, function () { d.classList.remove('vt'); });
+  });
+})();
+</script>

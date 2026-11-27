@@ -1,16 +1,17 @@
 /* tsam.co.jp/startup — 教科書「スタートアップのはじめ方」
    色・字・輪の決まりは global.css のまま。ここにあるのは教科書だけの部品。
-   意匠は公式と同じ一つ：見出しの o が輪。教科書の八つの区分を「Round 01〜08」と数え、
-   頁の頭にその区分の語（Intro・Money・Concept…）が大きく出て、その o に輪が座る。
-   読み進めるあいだ輪は左端の線を降り、読み終わりの「Next round」（次の頁）の o に着く。
+   意匠は公式と同じ一つ：見出しの o が輪で、大きな欧文は置き場所の幅ちょうどに組む。
+   教科書の八つの区分を「Round 01〜08」と数え、頁の頭にその区分の語（Intro・Money・Concept…）が出て、その o に輪が座る。
+   読み進めるあいだ輪は左端の線を降り、読み終わりの「Next round」（次の頁）の o に着くと、そこから次の頁への節が円く開く。
+   目次では、輪が着いた区分の語から順に、極細から極太へ太っていく（どこまで読んだかが、字の太さで分かる）。
    右肩の八つの灯りは、いま何ラウンド目か（global.css の .lamps を八つにしただけ）。 */
 
 /* ───── 目次（/startup） ───── */
 .tb-hero { min-height: min(100svh, 860px); }
-.tb-hero__h1 { display: flex; flex-direction: column-reverse; font-weight: 400; }
-.tb-hero__word { font-size: clamp(5rem, 25vw, 27rem); line-height: 0.9; margin-left: -0.04em; padding-bottom: 0.04em; }
-.tb-hero__ja { margin-top: clamp(8px, 1.4vw, 20px); font-size: clamp(1.0625rem, 2.1vw, 1.75rem); letter-spacing: 0.14em; line-height: 1.5; }
-.tb-hero .hero__foot { margin-top: clamp(14px, 2.4vh, 28px); }
+.tb-hero__h1 { display: flex; flex-direction: column; font-weight: 400; }
+/* 日本語の題は、狭い画面では下の語と同じ幅に張る（--n ＝字数。字間 0.1em ぶんを足して割る）。広い画面では 28px で止める */
+.tb-hero__ja { margin-bottom: clamp(12px, 2.2vw, 30px); font-size: min(1.75rem, 100cqw / (var(--n, 12) * 1.1 - 0.1)); font-weight: 700; letter-spacing: 0.1em; line-height: 1.5; white-space: nowrap; margin-right: -0.1em; }
+.tb-hero .hero__foot { margin-top: clamp(16px, 2.4vw, 32px); }
 
 .tb-pre { padding-block: clamp(56px, 8vw, 112px); }
 .tb-pre__text { display: grid; gap: 1.1em; max-width: 40em; }
@@ -20,12 +21,14 @@
 .tb-jump a { gap: 0.5em; align-items: baseline; }
 .tb-jump small { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--mute); }
 
-.tb-round { padding-block: clamp(64px, 9vw, 128px) clamp(56px, 8vw, 112px); }
-.tb-round .sec__head { margin-bottom: clamp(28px, 4.4vw, 64px); }
-.tb-round .sec__head .display { font-size: clamp(2.6rem, 12.5vw, 9.5rem); }
-.tb-who { display: grid; gap: 10px; align-content: start; }
-.tb-who p:first-child { max-width: 24em; line-height: 1.8; word-break: auto-phrase; text-wrap: pretty; }
-@media (min-width: 900px) { .tb-who { position: sticky; top: 40px; align-self: start; } }
+/* 区分の頭。左の柱に、札と灯り・区分の語（柱の幅いっぱい）・日本語の名前・誰のための区分か。広い画面では貼り付く */
+.tb-round { padding-block: clamp(48px, 7vw, 104px) clamp(48px, 7vw, 104px); }
+.tb-rhead { container-type: inline-size; display: grid; gap: 12px; align-content: start; }
+.tb-rhead__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--ink); }
+.tb-rhead h2 { display: flex; flex-direction: column-reverse; gap: 12px; margin-top: 8px; font-weight: 400; }
+.tb-rhead .sec__ja { font-size: 0.9375rem; font-weight: 700; letter-spacing: 0.1em; color: var(--ink); }
+.tb-who { max-width: 24em; font-size: 0.9375rem; line-height: 1.8; color: var(--mute); word-break: auto-phrase; text-wrap: pretty; }
+@media (min-width: 900px) { .tb-rhead { position: sticky; top: 40px; align-self: start; } }
 
 /* 八つの灯り */
 .lamps--8 { gap: 5px; }
@@ -45,9 +48,9 @@
 .tb-rows__n { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--mute); font-variant-numeric: tabular-nums; }
 .tb-rows__t { font-weight: 500; line-height: 1.65; }
 .tb-rows__b { grid-column: 2; font-size: 0.875rem; line-height: 1.8; color: var(--mute); }
-.tb-rows__go { grid-area: 1 / 3 / 3 / 4; align-self: center; font-family: var(--mono); color: var(--mute); transition: translate 0.25s; }
+.tb-rows__go { grid-area: 1 / 3 / 3 / 4; align-self: center; font-size: 14px; color: var(--mute); transition: translate 0.35s var(--ease), color 0.25s; }
 .tb-rows a:hover .tb-rows__t { text-decoration: underline; text-decoration-color: var(--coral); text-underline-offset: 0.3em; }
-.tb-rows a:hover .tb-rows__go { translate: 4px 0; color: var(--ink); }
+.tb-rows a:hover .tb-rows__go { translate: 6px 0; color: var(--ink); }
 .tb-rows--tag a { grid-template-columns: 5.4rem 1fr auto; }
 .tb-rows--tag .tb-rows__n { text-transform: uppercase; }
 @media (max-width: 639px) {
@@ -56,32 +59,31 @@
   .tb-rows--tag .tb-rows__go { grid-area: 1 / 2 / 4 / 3; }
 }
 
-.tb-door .door__link { font-size: clamp(3.6rem, 19.5vw, 17rem); }
-
 /* ───── 頁 ───── */
-.tb { padding: clamp(124px, 17vw, 200px) var(--pad) clamp(64px, 9vw, 128px); }
-.tb-word { font-size: clamp(3.4rem, 17vw, 13rem); margin-left: -0.045em; }
-.tb-word a { text-decoration: none; }
-.tb-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 24px; margin-top: clamp(18px, 3vw, 40px); padding-top: 8px; border-top: 1px solid var(--ink); }
+/* 頁の頭：現在地と灯りの帯。その下の左に区分の語（柱の幅いっぱい）、右に題 */
+.tb { padding: calc(var(--top-h) + clamp(12px, 3vw, 40px)) var(--pad) clamp(64px, 9vw, 128px); }
+.tb-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 24px; border-bottom: 1px solid var(--ink); }
+.tb-top { margin-top: clamp(24px, 4vw, 64px); align-items: end; }
+.tb-word { container-type: inline-size; }
+.tb-word a { display: block; text-decoration: none; }
 .tb-crumb { align-items: center; gap: 0.7em; }
 .tb-crumb a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
 .tb-crumb a:hover { text-decoration: underline; text-decoration-color: var(--coral); }
 .tb-crumb i { color: var(--mute); }
 .tb-title {
   max-width: 21em;
-  margin-top: clamp(22px, 3.4vw, 52px);
-  font-size: clamp(1.625rem, 4vw, 3.375rem);
-  font-weight: 400;
+  font-size: clamp(1.625rem, 3.5vw, 3.125rem);
+  font-weight: 700;
   line-height: 1.42;
   letter-spacing: 0.02em;
   word-break: auto-phrase;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
-.tb-title__b { display: block; margin-top: 0.55em; font-size: 0.54em; line-height: 1.65; letter-spacing: 0.04em; color: var(--mute); }
+.tb-title__b { display: block; margin-top: 0.55em; font-size: 0.54em; font-weight: 400; line-height: 1.65; letter-spacing: 0.04em; color: var(--mute); }
 @media (max-width: 599px) { .tb-title__b { font-size: 0.66em; } }
 
-.tb-cols { margin-top: clamp(36px, 6vw, 96px); }
+.tb-cols { margin-top: clamp(36px, 6vw, 88px); padding-top: clamp(20px, 3vw, 40px); border-top: 1px solid var(--line); }
 .tb-side { display: grid; gap: 14px; align-content: start; font-size: 0.8125rem; line-height: 1.7; }
 .tb-side small { display: block; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--mute); }
 .tb-side__by a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -10px; text-decoration-color: var(--coral); }
@@ -164,7 +166,8 @@
 .tb-text .faq :is(dt, dd) { display: grid; grid-template-columns: 2.1em 1fr; }
 .tb-text .faq dt { font-weight: 500; line-height: 1.75; }
 .tb-text .faq dd { margin-top: 0.45em; font-size: 0.9375em; line-height: 1.95; }
-.tb-text .faq :is(dt, dd)::before { font-family: var(--display); font-size: 1.25em; font-weight: 300; line-height: 1.45; }
+.tb-text .faq :is(dt, dd)::before { font-family: var(--display); font-size: 1.25em; font-weight: 900; line-height: 1.45; }
+.tb-text .faq dd::before { font-weight: 200; }
 .tb-text .faq dt::before { content: 'Q'; }
 .tb-text .faq dd::before { content: 'A'; color: var(--mute); }
 
@@ -174,8 +177,9 @@
 .tb-next { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px var(--gap); padding-bottom: clamp(22px, 3.2vw, 44px); border-bottom: 1px solid var(--ink); text-decoration: none; }
 .tb-next .tag { grid-column: 1 / -1; }
 .tb-next__title { max-width: 22em; font-size: clamp(1.4375rem, 3.5vw, 2.875rem); line-height: 1.5; letter-spacing: 0.02em; word-break: auto-phrase; overflow-wrap: anywhere; text-wrap: balance; }
-.tb-next__go { font-family: var(--display); font-weight: 200; font-size: clamp(2.6rem, 7vw, 6rem); line-height: 0.9; transition: translate 0.35s cubic-bezier(0.2, 0.7, 0.1, 1); }
-.tb-next:hover .tb-next__go { translate: 0.14em 0; }
+.tb-next__go { width: clamp(56px, 7vw, 104px); height: clamp(56px, 7vw, 104px); font-size: clamp(18px, 2.2vw, 32px); }
+.tb-next:hover .tb-next__go { background: var(--ink); border-color: var(--ink); color: var(--on); }
+.tb-next:hover .tb-next__go .arw { translate: 4px 0; }
 .tb-next:hover .tb-next__title { text-decoration: underline; text-decoration-color: var(--coral); text-decoration-thickness: 1.5px; text-underline-offset: 0.26em; }
 .tb-rel { margin-top: clamp(48px, 7vw, 96px); padding-top: clamp(18px, 2.4vw, 28px); border-top: 0; }
 .tb-nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 36px; margin-top: clamp(28px, 4vw, 48px); }
@@ -188,8 +192,8 @@
 .tb-terms dt { font-size: 1.125rem; font-weight: 500; line-height: 1.6; }
 .tb-terms dt small { display: block; font-size: 0.75rem; font-weight: 400; letter-spacing: 0.08em; color: var(--mute); }
 .tb-terms dd { max-width: 40em; line-height: 1.9; }
-.tb-terms__more { display: flex; align-items: center; gap: 0.5em; min-height: 44px; font-size: 0.8125rem; color: var(--mute); text-decoration: none; }
-.tb-terms__more span { font-family: var(--mono); }
+.tb-terms__more { display: flex; align-items: center; gap: 0.7em; min-height: 44px; font-size: 0.8125rem; color: var(--mute); text-decoration: none; }
+.tb-terms__more .arw { flex: none; width: 0.85em; height: 0.85em; }
 .tb-terms__more:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--coral); }
 @media (min-width: 900px) {
   .tb-terms > div { grid-template-columns: repeat(12, 1fr); padding: 22px 0 14px; }

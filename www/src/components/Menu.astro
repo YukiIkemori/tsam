@@ -1,0 +1,77 @@
+---
+// 全体のメニュー。右上の円い押しどころ（.lens）を押すと、そこから円く開く。公式とブログの両方が読む。
+//
+// ・押しどころは白い正円を「差の絶対値」で重ねたもの。明るい地の上では黒く、暗い地の上では白く見え、
+//   下を通る字は中だけ色が裏返る（レンズ）。地の色を調べて塗り分ける必要がない
+// ・開いた面は、行き先の語を幅いっぱいに組んだ字の壁（短い語ほど大きい）。壁の幅は、画面の高さに収まるように決める
+// ・指す仕組みのある画面では、語は極細で待っていて、指した語だけが輪を芯に太る。指す仕組みの無い画面（スマホ）では最初から太い
+import Fit from './Fit.astro';
+import Arrow from './Arrow.astro';
+import { measure, HEAVY } from '../lib/fit';
+
+export interface Item { word: string; ja: string; href: string; out?: boolean; current?: boolean }
+export interface Minor { label: string; href: string; out?: boolean }
+interface Props { items: Item[]; minor?: Minor[] }
+const { items, minor = [] } = Astro.props;
+// 語を全部積んだときの高さ ÷ 壁の幅
+const ratio = items.reduce((s, it) => {
+  const m = measure(it.word, HEAVY);
+  return s + (m.top + m.bot) / m.ink;
+}, 0);
+const no = (i: number) => String(i + 1).padStart(2, '0');
+---
+<button class="lens" type="button" aria-expanded="false" aria-controls="menu" aria-label="メニューを開く"><i aria-hidden="true"></i><i aria-hidden="true"></i></button>
+<div class="menu" id="menu" style={`--mr:${ratio.toFixed(4)};--mn:${items.length}`}>
+  <nav class="menu__in" aria-label="全体のメニュー">
+    <ul class="menu__list">
+      {items.map((it, i) => (
+        <li>
+          <a href={it.href} rel={it.out ? 'noopener' : undefined} aria-current={it.current ? 'page' : undefined}>
+            <span class="menu__tag"><b>{no(i)}</b><span>{it.ja}</span><span class="go"><Arrow dir={it.out ? 'ne' : 'e'} /></span></span>
+            <Fit word={it.word} seat={false} class="menu__word" />
+          </a>
+        </li>
+      ))}
+    </ul>
+    {minor.length > 0 && (
+      <ul class="menu__minor">
+        {minor.map((m) => <li><a href={m.href} rel={m.out ? 'noopener' : undefined}>{m.label}{m.out && <Arrow dir="ne" />}</a></li>)}
+      </ul>
+    )}
+  </nav>
+</div>
+
+<script>
+  const lens = document.querySelector<HTMLButtonElement>('.lens');
+  const menu = document.getElementById('menu');
+  if (lens && menu) {
+    const root = document.documentElement;
+    const isOpen = () => lens.getAttribute('aria-expanded') === 'true';
+    const set = (open: boolean, focus = true) => {
+      // 開く円の芯は、押しどころのまんなか
+      const r = lens.getBoundingClientRect();
+      menu.style.setProperty('--mx', `${r.left + r.width / 2}px`);
+      menu.style.setProperty('--my', `${r.top + r.height / 2}px`);
+      lens.setAttribute('aria-expanded', String(open));
+      lens.setAttribute('aria-label', open ? 'メニューを閉じる' : 'メニューを開く');
+      menu.classList.toggle('is-open', open);
+      root.classList.toggle('menu-open', open);
+      // 開いているあいだ、下の頁は触れない・読み上げない
+      document.querySelectorAll<HTMLElement>('.top, main, .foot').forEach((el) => (el.inert = open));
+      if (open) menu.scrollTop = 0;
+      else if (focus) lens.focus({ preventScroll: true });
+    };
+    lens.addEventListener('click', () => set(!isOpen()));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) set(false);
+    });
+    // 行き先を押したら閉じる（同じ頁の中の見出しへ行くときも、そのまま下の頁が動く）
+    menu.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) set(false, false);
+    });
+    // 「戻る」で帰ってきたときに、開いたままにしない
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted && isOpen()) set(false, false);
+    });
+  }
+</script>

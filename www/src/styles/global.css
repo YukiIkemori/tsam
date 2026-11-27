@@ -1,7 +1,13 @@
 /* tsam.co.jp
-   地は白〜薄いグレー、墨は濃いグレー、差し色はくぐもったコーラル（2026-11-25 オーナーの好み）。
+   地は白〜薄いグレー、墨は濃いグレー、差し色はくぐもったコーラル（2026-11-25 オーナーの好み。色は変えていない）。
    コーラルは明るい地の上では文字に使わない（コントラスト 2.6）。輪と線と、暗い地の上だけ。
-   意匠は一つ：見出しの「o」が輪になっていて、コーラルの輪が一つだけ見出しから見出しへ渡っていく。 */
+
+   意匠（2026-11-28 の組み直し。オーナー「すごく尖らせてよい。色味はあまり変えずに」）：
+   ・尖ったもの（極細の線・Jost の尖った頂点）と、円いもの（輪・正円）だけで組む。角の丸い箱は使わない
+   ・大きな欧文は、どれも置き場所の幅ちょうどに組む（.fit。短い語ほど大きい）。極太 900 と極細 200 を隣り合わせる
+   ・見出しの「o」が輪。コーラルの輪は一つだけで、読んでいる見出しの o に座る。次の節へ渡ると、
+     着いた o から波が広がって次の節が開く（Mentor to the next round. の round ＝輪。動きは scripts/ring.js）
+   ・押すものは正円、目で追う線は極細。いま見ているものが太る（年表の年、一覧の語） */
 
 :root {
   --bg: #f0f0ee;
@@ -14,14 +20,23 @@
   --on-dark: #eeeeec;
   --mute-dark: #a3a3a8;
   --line-dark: rgb(238 238 236 / 0.22);
+  --on: var(--bg); /* 墨で塗ったものの上に載る字の色 */
 
-  --pad: clamp(22px, 4.6vw, 72px);
+  --pad: clamp(18px, 2.6vw, 40px);
   --rail: calc(var(--pad) / 2);
   --gap: clamp(16px, 2vw, 32px);
+  --top-h: 64px;
 
   --display: 'Jost Variable', Jost, Futura, 'Century Gothic', sans-serif;
   --sans: 'IBM Plex Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', Meiryo, sans-serif;
+  /* 欧文と数字は Jost、和文は Plex（数字の混じる値や名前に） */
+  --mix: 'Jost Variable', Jost, 'IBM Plex Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', Meiryo, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+
+  /* 輪の左右の空きと字間の既定（.fit と .display が上書きする） */
+  --side: 0.036;
+  --trk: 0;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -60,25 +75,50 @@ body::after {
 
 /* ───── 欧文の大きな字 ───── */
 .display {
+  --side: 0.046;
+  --trk: -0.03;
   font-family: var(--display);
-  font-weight: 300;
-  letter-spacing: -0.022em;
-  line-height: 0.94;
-  font-feature-settings: normal;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.9;
+  font-synthesis: none;
+}
+.display--thin { --side: 0.0365; --trk: -0.011; font-weight: 200; letter-spacing: -0.011em; }
+
+/* 幅いっぱいに組む字（Fit.astro）。字の大きさ＝置き場所の幅 ÷ 墨の幅（--i9。build のときの実測）。
+   置き場所は、いちばん近い .cq（container）。箱の天は字の天、底は字の底にぴったり合わせてある
+   （Jost の天地は 1.07 / -0.375 em。行の高さを 2×天−0.695em にすると、ベースラインが箱の天から「天」のぶん下に来る） */
+.cq { container-type: inline-size; }
+.fit {
+  --trk: var(--t9);
+  --fs: calc(var(--fw, 100cqw) / var(--i9));
+  display: block;
+  height: calc((var(--top) + var(--bot)) * var(--fs));
+  margin-left: calc(var(--l9) * var(--fs) * -1);
+  font-family: var(--display);
+  font-size: var(--fs);
+  font-weight: var(--w);
+  line-height: calc((var(--top) * 2 - 0.695) * var(--fs));
+  letter-spacing: calc(var(--trk) * 1em);
+  white-space: nowrap;
+  font-kerning: normal;
+  font-synthesis: none;
+}
+@supports not (width: 1cqw) {
+  .fit { --fw: calc(100vw - 2 * var(--pad)); }
 }
 
-/* 輪になった o。寸法は Jost の o の実測（幅 .472em・高さ .480em・左の空き .039em・送り .55em・
-   ベースラインから下へ .009em・線の太さ .051em）。本物の字と入れ替えても並びが変わらない */
+/* 輪になった o。外径 .48em（Jost の o の高さ）の正円で、線の太さは .064em。太い字の中でも細い字の中でも同じ形 */
 .o { white-space: nowrap; }
 .ring {
   display: inline-block;
   position: relative;
-  width: 0.478em;
-  height: 0.478em;
-  margin: 0 0.033em 0 0.039em;
-  border: 0.051em solid var(--coral);
+  width: 0.48em;
+  height: 0.48em;
+  margin: 0 calc((var(--side) + var(--trk)) * 1em) 0 calc(var(--side) * 1em);
+  border: 0.064em solid var(--coral);
   border-radius: 50%;
-  vertical-align: -0.009em;
+  vertical-align: -0.01em;
 }
 .ring-on .ring { border-color: currentColor; transition: border-color 0.5s; }
 .ring-on .o.is-on .ring { border-color: var(--coral); transition: none; }
@@ -86,7 +126,7 @@ body::after {
 /* 席に着いた輪のまわりを、点が一つ回る */
 .orbit {
   position: absolute;
-  inset: -52%;
+  inset: -46%;
   border: 1px solid var(--coral);
   border-radius: 50%;
   opacity: 0.85;
@@ -103,7 +143,7 @@ body::after {
   border-radius: 50%;
   background: var(--coral);
 }
-.ring-on .orbit { opacity: 0; scale: 0.5; transition: opacity 0.4s, scale 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ring-on .orbit { opacity: 0; scale: 0.5; transition: opacity 0.4s, scale 0.6s var(--ease); }
 .ring-on .o.is-on .orbit { opacity: 0.85; scale: 1; transition-delay: 0.05s; }
 @keyframes turn { to { rotate: 360deg; } }
 
@@ -115,7 +155,7 @@ body::after {
   width: 100px;
   height: 100px;
   margin: -50px 0 0 -50px;
-  border: 10.67px solid var(--coral);
+  border: 13.33px solid var(--coral);
   border-radius: 50%;
   pointer-events: none;
   z-index: 40;
@@ -123,6 +163,36 @@ body::after {
   will-change: transform;
 }
 .traveler.is-moving { visibility: visible; }
+/* 輪が着いたあと、そこから広がる波（次の節が開いていく円の縁）。芯（--sx・--sy）と外径（--sr2）・線の太さ（--sw2）は ring.js。
+   長さとして登録してあるので、transition で動かせる */
+@property --sr2 { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --sw2 { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.shock {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  pointer-events: none;
+  visibility: hidden;
+  background: radial-gradient(circle at var(--sx, 50%) var(--sy, 50%), transparent calc(var(--sr2) - var(--sw2) - 1px), var(--coral) calc(var(--sr2) - var(--sw2)), var(--coral) var(--sr2), transparent calc(var(--sr2) + 1px));
+}
+.shock.is-on { visibility: visible; }
+
+/* 太っていく字：極細（100）から極太（900）へ。字の大きさは変えない。輪のある語は、輪の位置を動かさずに
+   両側へ太って、最後に幅いっぱいに届く（輪より前の字が短いぶん、左を空けておく。--d1・--d4 は fit.ts の実測）。
+   --sw が 0 → 1。Jost の母型は 100・400・900 で、そのあいだは直線なので、400（--sw .375）で折れる直線で追う。
+   --sw を数として登録できないブラウザでは、動かずに仕上がりの形で出る */
+@property --sw { syntax: '<number>'; inherits: false; initial-value: 1; }
+.fit:is(.swell, .menu__word) {
+  --k1: min(var(--sw) / 0.375, 1);
+  --k2: max((var(--sw) - 0.375) / 0.625, 0);
+  margin-left: calc((var(--d1) + (var(--d4) - var(--d1)) * var(--k1) - var(--d4) * var(--k2) - var(--l9)) * var(--fs));
+  font-weight: calc(100 + 800 * var(--sw));
+  letter-spacing: calc((-0.008 - 0.008 * var(--k1) + (var(--t9) + 0.016) * var(--k2)) * 1em);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .js .swell { transition: --sw 1.25s cubic-bezier(0.3, 0.25, 0.15, 1); }
+  .js .swell:not(.in) { --sw: 0; }
+}
 
 /* ───── 小さな札（等幅） ───── */
 .tag {
@@ -139,10 +209,30 @@ body::after {
 .tag b { font-weight: 500; color: var(--ink); }
 .tag span { font-family: var(--sans); letter-spacing: 0.12em; }
 
-/* 節の頭の右端に並ぶ三つの灯り。いま何ラウンド目か（済んだぶんが灯る） */
+/* 節の頭の右端に並ぶ灯り。いま何ラウンド目か（済んだぶんが灯る） */
 .lamps { display: inline-flex; gap: 7px; }
 .lamps i { width: 9px; height: 9px; border: 1px solid var(--ink); border-radius: 50%; }
 .lamps i.on { background: var(--coral); border-color: var(--coral); }
+
+/* 矢印（Arrow.astro）と、正円の押しどころ */
+.arw { display: block; width: 1em; height: 1em; overflow: visible; stroke-width: 1.5px; }
+.go {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 15px;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.go .arw { transition: translate 0.35s var(--ease); }
+a:hover > .go, a:focus-visible > .go, button:hover > .go { background: var(--ink); border-color: var(--ink); color: var(--on); }
+a:hover > .go .arw { translate: 3px 0; }
+a:hover > .go--ne .arw { translate: 2px -2px; }
+a:hover > .go--s .arw { translate: 0 3px; }
+a:hover > .go--w .arw { translate: -3px 0; }
 
 /* ───── 天 ───── */
 .top {
@@ -152,16 +242,20 @@ body::after {
   right: 0;
   z-index: 20;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 4px 24px;
-  padding: 18px var(--pad) 0;
+  height: var(--top-h);
+  padding: 0 var(--pad);
 }
 .logo { display: inline-flex; align-items: center; min-height: 44px; }
 .logo__mark { display: block; width: auto; height: 17px; }
-.nav { display: flex; gap: clamp(7px, 2.4vw, 36px); margin-inline: -4px; }
+/* 並んだメニューは広い画面だけ。狭い画面では、右上の円い押しどころ（.lens）から全体のメニューを開く */
+.nav { display: none; gap: clamp(14px, 2.2vw, 34px); margin-inline: -4px; }
+@media (min-width: 900px) { .nav { display: flex; } }
+html:not(.js) .nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 12px; }
 .nav a {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -172,11 +266,19 @@ body::after {
   text-transform: uppercase;
   text-decoration: none;
 }
-.nav a span { margin-left: 0.3em; }
-.nav a:hover, .foot__links a:hover { text-decoration: underline; }
+.nav a .arw { width: 0.8em; height: 0.8em; margin-left: 0.4em; }
+.nav a::after { content: ''; position: absolute; left: 4px; right: 4px; bottom: 11px; height: 1px; background: currentColor; scale: 0 1; transform-origin: 0 50%; transition: scale 0.35s var(--ease); }
+.nav a:hover::after { scale: 1 1; }
 
-/* ───── 表紙 ───── */
+/* ───── 表紙：字の壁 ─────
+   「Mentor / to the next / round.」を、極太・極細・極太で、同じ幅に組む。
+   壁の幅（--ww）は、使える幅と使える高さの小さいほうで決まる（縦にはみ出さない）。比は index.astro が実測して渡す。
+   ・縦長の画面：四行（Mentor / to the / next / round.）。どの行も幅いっぱい
+   ・横長の画面：三行。まんなかの細い行は、余った高さのぶんだけの大きさになり、足りない幅は
+     「to」と「the next」のあいだの線（the の t の横棒を左へ引き延ばした線）が埋める */
 .hero {
+  --foot-h: 132px;
+  --bottom: 14px;
   position: relative;
   isolation: isolate;
   display: flex;
@@ -184,24 +286,37 @@ body::after {
   justify-content: flex-end;
   min-height: 100vh;
   min-height: 100svh;
-  padding: 120px var(--pad) clamp(20px, 3.4vh, 40px);
+  padding: var(--top-h) var(--pad) var(--bottom);
+  background: var(--bg);
   overflow: hidden;
   overflow: clip;
 }
-.hero__title { font-size: clamp(3.3rem, 17.4vw, 15.5rem); margin-left: -0.04em; }
-.hero__title .l { display: block; }
+.hero__in { container-type: inline-size; }
+.hero__grid {
+  --gk: 0.03;
+  --W: 100cqw;
+  --H: calc(100svh - var(--top-h) - var(--foot-h) - var(--bottom));
+  --ww: min(var(--W), calc(var(--H) / (var(--ra) + var(--rb1) + var(--rb2) + var(--rc) + 3 * var(--gk))));
+}
+.wall { width: var(--ww); font-weight: 400; }
+.wall .fit { --fw: var(--ww); }
+.wall__l { display: block; }
+.wall__l + .wall__l, .wall__next { margin-top: calc(var(--ww) * var(--gk)); }
+/* to と the のあいだ。縦長の画面ではただの空き（空白一つぶん） */
+.wall__rule { display: inline-block; width: calc((var(--sp) + var(--trk)) * 1em); }
+
 .hero__foot {
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: end;
-  gap: 10px var(--gap);
-  margin-top: clamp(28px, 5vh, 56px);
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  align-items: center;
+  gap: 4px var(--gap);
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ink);
 }
-.hero__lead { grid-column: 1 / -1; font-size: 0.9375rem; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
-.hero__next { text-decoration: none; min-height: 44px; align-items: center; margin-block: -12px; justify-self: end; }
-.hero__next span { font-family: var(--mono); letter-spacing: 0; color: var(--ink); }
+.hero__lead { grid-column: 1 / -1; font-size: 0.9375rem; font-weight: 500; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
+.hero__next { text-decoration: none; align-items: center; justify-self: end; gap: 0.9em; }
+.hero__next b { color: var(--ink); }
 
 /* 表紙の輪：round の o を芯に、外へ外へと次の輪が広がる */
 .rings { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
@@ -220,43 +335,78 @@ body::after {
 .rings i.rev { animation-direction: reverse; }
 .rings i::after { background: var(--ink); width: 5px; height: 5px; margin: -3px 0 0 -2.5px; }
 
-@media (min-width: 760px) {
-  .hero__title { font-size: clamp(5rem, 15vw, 17rem); }
-  .hero__title .l { display: inline; }
-  .hero__title .l--last { display: block; }
+@media (min-aspect-ratio: 1/1) {
+  .hero--wall { --foot-h: 76px; }
+  .hero__grid {
+    --mmin: 0.08;
+    --gk: 0.025;
+    --rh: calc(var(--ra) + var(--rc));
+    --ww: min(var(--W), calc(var(--H) / (var(--rh) + var(--mmin) + 2 * var(--gk))));
+    --mid: clamp(calc(var(--ww) * var(--mmin)), calc(var(--H) - var(--ww) * (var(--rh) + 2 * var(--gk))), calc(var(--ww) * var(--mnat)));
+  }
+  .wall__b {
+    --tk: -0.011; /* 細い行の字間（index.astro の TK と同じ値） */
+    display: flex;
+    align-items: baseline;
+    width: calc(var(--ww) + (var(--lbn) + var(--rbn)) * 1em);
+    height: var(--mid);
+    margin-left: calc(var(--lbn) * -1em);
+    font-family: var(--display);
+    font-size: calc(var(--mid) / var(--tb));
+    font-weight: 200;
+    line-height: calc(var(--mid) * 2 - 0.695em);
+    letter-spacing: calc(var(--tk) * 1em);
+    white-space: nowrap;
+  }
+  .wall .wall__b .wall__b1 { display: contents; }
+  .wall .wall__b :is(.wall__b1, .wall__next) { height: auto; margin: 0; font: inherit; letter-spacing: inherit; transition: none; }
+  .wall .wall__b .wall__next { margin-left: calc((var(--sp) + var(--tk)) * 1em); }
+  /* the の t の横棒（天 .46em・太さ .029em）を左へ引き延ばした線 */
+  .wall__rule { flex: 1 1 0; width: auto; min-width: calc((var(--sp) + var(--tk) - 0.11) * 1em); height: 0.029em; margin: 0 -0.02em 0 0.13em; background: currentColor; transform: translateY(-0.431em); }
   .hero__foot { grid-template-columns: 1fr auto auto; gap: var(--gap) clamp(32px, 6vw, 96px); }
   .hero__lead { grid-column: auto; font-size: 1rem; }
 }
+/* 横に広い画面：壁の右に細い柱を立てて、案内はそこへ（壁は下の帯のぶんだけ大きくなる） */
+@media (min-aspect-ratio: 13/10) {
+  .hero--wall { --foot-h: 0px; --bottom: 26px; }
+  .hero__grid { --col: max(190px, 13cqw); --W: calc(100cqw - var(--col) - var(--gap)); display: grid; grid-template-columns: var(--ww) minmax(0, 1fr); column-gap: var(--gap); align-items: stretch; }
+  .hero__grid > .hero__foot { container-type: inline-size; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 14px; margin: 0; padding: 0 0 0 var(--gap); border-top: 0; border-left: 1px solid var(--ink); }
+  /* 柱の幅に「起業家をサポートする」（10字）が一行で入る大きさ */
+  .hero__grid .hero__lead { margin-bottom: auto; font-size: clamp(0.9375rem, 9.6cqw, 1.5rem); line-height: 1.6; }
+  .hero__grid .hero__place { flex-wrap: wrap; gap: 0 0.9em; }
+  .hero__grid .hero__next { justify-self: auto; margin-top: 6px; }
+}
 
-/* 入り：三行が順に上がってくる。fill は backwards だけ（forwards にすると重なりの文脈が残り、輪が字の上に出る） */
+/* 入り：太い行が極細から太る。細い行と案内はあとから現れる */
 @media (prefers-reduced-motion: no-preference) {
-  .js .hero__title .l { animation: rise 1s cubic-bezier(0.2, 0.7, 0.1, 1) backwards; }
-  .js .hero__title .l:nth-child(2) { animation-delay: 0.08s; }
-  .js .hero__title .l:nth-child(3) { animation-delay: 0.16s; }
-  .js .hero__foot { animation: fade 1.2s 0.5s backwards; }
-  .js .rings i { animation: turn var(--t) linear infinite, bloom 1.6s cubic-bezier(0.2, 0.7, 0.1, 1) backwards; }
+  .js .wall__next { transition-delay: 0.08s; }
+  .js .wall__c { transition-delay: 0.16s; }
+  .js .wall__b1, .js .wall__b { animation: fade 1.2s 0.3s backwards; }
+  .js .hero__foot { animation: fade 1.2s 0.7s backwards; }
+  .js .rings i { animation: turn var(--t) linear infinite, bloom 1.6s var(--ease) backwards; }
   .js .rings i:nth-child(2) { animation-delay: 0s, 0.12s; }
   .js .rings i:nth-child(3) { animation-delay: 0s, 0.24s; }
   .js .rings i:nth-child(4) { animation-delay: 0s, 0.36s; }
   .js .rings i:nth-child(5) { animation-delay: 0s, 0.48s; }
-  .js .rings i:nth-child(6) { animation-delay: 0s, 0.6s; }
 }
-@keyframes rise { from { opacity: 0; clip-path: inset(0 0 100% 0); } to { opacity: 1; clip-path: inset(-20% -20% -20% -20%); } }
 @keyframes fade { from { opacity: 0; } }
 @keyframes bloom { from { opacity: 0; scale: 0.6; } }
 
 /* ───── 節 ───── */
-.sec { position: relative; padding: clamp(72px, 12vw, 168px) var(--pad) clamp(72px, 11vw, 152px); }
-.sec--paper { background: var(--paper); }
-.sec--dark { background: var(--dark); color: var(--on-dark); --ink: var(--on-dark); --mute: var(--mute-dark); --line: var(--line-dark); }
+.sec { position: relative; padding: clamp(56px, 8vw, 128px) var(--pad) clamp(72px, 10vw, 152px); background: var(--bg); }
+.sec--paper { background: var(--paper); --on: var(--paper); }
+.sec--dark { background: var(--dark); color: var(--on-dark); --ink: var(--on-dark); --mute: var(--mute-dark); --line: var(--line-dark); --on: var(--dark); }
+/* 次の節が開く前：前の節の地が、そのまま下へ続いて見える（次の節は ring.js が円で切り抜いて隠している） */
+.ring-on :is(.hero, .sec, .door):has(+ [data-iris])::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: var(--ext, 0px); background: inherit; z-index: -1; pointer-events: none; }
+@media print { [data-iris], .foot { clip-path: none !important; } }
+
 .sec__head {
+  container-type: inline-size;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 0 0.9em;
-  padding-bottom: clamp(20px, 3vw, 40px);
-  border-bottom: 1px solid var(--ink);
-  margin-bottom: clamp(36px, 6vw, 88px);
+  margin-bottom: clamp(40px, 6.4vw, 104px);
 }
 /* h2 の中身は「会社概要 Company」。日本語の名前も見出しの一部として検索に読ませたいので h2 に入れ、
    並びだけ display: contents でほどいて、札の行と大きな字の行に置き直している */
@@ -264,10 +414,11 @@ body::after {
 .sec__round { grid-area: 1 / 1; }
 .sec__ja { grid-area: 1 / 2; font-size: 0.75rem; line-height: 1.5; letter-spacing: 0.12em; color: var(--mute); }
 .sec__head .lamps { grid-area: 1 / 3; }
-.sec__head .display { grid-area: 2 / 1 / 3 / -1; font-size: clamp(2.6rem, 14vw, 11.5rem); margin: 0.2em 0 0 -0.045em; }
+.sec__head .fit { grid-area: 2 / 1 / 3 / -1; margin-top: clamp(14px, 2.2vw, 32px); }
+.sec__head::after { content: ''; grid-area: 3 / 1 / 4 / -1; height: 1px; margin-top: clamp(14px, 2.2vw, 32px); background: var(--ink); }
 
-.split { display: grid; gap: clamp(36px, 6vw, 56px) var(--gap); }
-.split--sub { margin-top: clamp(64px, 10vw, 136px); padding-top: clamp(20px, 3vw, 32px); border-top: 1px solid var(--ink); }
+.split { display: grid; gap: clamp(32px, 6vw, 56px) var(--gap); }
+.split--sub { margin-top: clamp(64px, 10vw, 144px); padding-top: clamp(16px, 2vw, 24px); border-top: 1px solid var(--ink); }
 @media (min-width: 900px) {
   .split { grid-template-columns: repeat(12, 1fr); }
   .split > :first-child { grid-column: 1 / 5; }
@@ -277,18 +428,33 @@ body::after {
 
 /* Company */
 .statement {
-  font-size: clamp(1.3rem, 3.5vw, 3rem);
-  font-weight: 300;
-  line-height: 1.62;
-  letter-spacing: 0.02em;
+  font-size: clamp(1.5rem, 4.5vw, 4.375rem);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
   font-feature-settings: 'palt';
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
-.company { display: grid; gap: clamp(36px, 6vw, 72px) var(--gap); }
-.company__text { display: grid; gap: 1em; max-width: 34em; }
-.spec { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
-.spec > div { padding: 18px 16px 20px 0; border-bottom: 1px solid var(--line); }
+/* 読み進めるにつれて、薄い字が頭から墨になっていく（reveal.js が --p を 0 → 1 に動かす）。
+   行をまたぐ inline の背景は、行をつないだ一本の帯として塗られるので、読む順に進む */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  @media (prefers-reduced-motion: no-preference) {
+    .js .fill {
+      --e: calc(var(--p, 1) * 112%);
+      background: linear-gradient(90deg, var(--ink) calc(var(--e) - 12%), color-mix(in srgb, var(--ink) 15%, transparent) var(--e));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-box-decoration-break: slice;
+      box-decoration-break: slice;
+      color: transparent;
+    }
+  }
+}
+.company { display: grid; gap: clamp(36px, 6vw, 80px) var(--gap); }
+.company__text { display: grid; gap: 1em; max-width: 34em; font-size: 1.0625rem; }
+.spec { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--ink); }
+.spec > div { padding: 14px 16px 20px 0; border-bottom: 1px solid var(--line); }
 .spec__wide { grid-column: 1 / -1; }
 .spec dt, .field label, .field legend, .books__meta, .recent time, .who__role {
   font-family: var(--mono);
@@ -297,113 +463,126 @@ body::after {
   line-height: 1.6;
   color: var(--mute);
 }
-.spec dt { font-family: var(--sans); letter-spacing: 0.1em; margin-bottom: 6px; }
-.spec dd { font-size: 1rem; line-height: 1.75; }
-.spec small { font-size: 0.8125rem; color: var(--mute); }
+.spec dt { font-family: var(--sans); letter-spacing: 0.1em; margin-bottom: 8px; }
+.spec dd { font-family: var(--mix); font-size: clamp(1.0625rem, 1.5vw, 1.375rem); font-weight: 500; line-height: 1.6; }
+.spec small { font-size: 0.8125rem; font-weight: 400; color: var(--mute); }
 @media (min-width: 900px) {
   .company { grid-template-columns: repeat(12, 1fr); }
   .statement { grid-column: 1 / 13; }
-  .company__text { grid-column: 1 / 5; align-self: start; }
-  .spec { grid-column: 6 / 13; }
-  .spec > div:nth-child(odd):not(.spec__wide) { padding-right: var(--gap); }
+  .company__text { grid-column: 7 / 12; }
+  .spec { grid-column: 1 / 13; grid-template-columns: repeat(4, 1fr); }
+  .spec > div { padding: 16px var(--gap) 28px 0; }
+  .spec > div + div { padding-left: var(--gap); border-left: 1px solid var(--line); }
+  .spec__wide { grid-column: span 2; }
+  .spec > .spec__wide:nth-child(5) { padding-left: 0; border-left: 0; }
 }
 
 /* Background */
 .who { display: grid; gap: 1em; align-content: start; }
-.who__name { font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 300; letter-spacing: 0.08em; line-height: 1.3; }
-.who__name .display { display: block; margin-top: 0.5em; font-size: 0.5em; letter-spacing: 0.02em; line-height: 1.2; color: var(--mute); }
-.who__role { font-family: var(--sans); letter-spacing: 0.12em; margin-top: -0.9em; margin-bottom: 0.6em; }
-.years { border-top: 1px solid var(--line); }
+.who__name { font-size: clamp(2.25rem, 4.6vw, 4.25rem); font-weight: 700; letter-spacing: 0.06em; line-height: 1.25; }
+.who__name .display { display: block; margin-top: 0.5em; font-size: 0.44em; font-weight: 200; letter-spacing: 0.01em; line-height: 1.2; }
+.who__role { font-family: var(--sans); letter-spacing: 0.12em; margin-top: -0.6em; margin-bottom: 0.6em; }
+/* 年表。年の数字は極細で、画面のまんなかに来た行だけ太る（reveal.js が .is-focus を付ける） */
+.years { --yfs: clamp(2.625rem, 8.2vw, 7.5rem); border-top: 1px solid var(--ink); }
 .years li {
   display: grid;
-  grid-template-columns: clamp(5.2rem, 22vw, 10rem) 1fr;
-  gap: 0 var(--gap);
+  grid-template-columns: calc(var(--yfs) * 2.95) 1fr;
+  gap: 0 clamp(8px, 1.6vw, 28px);
   align-items: baseline;
-  padding: clamp(16px, 2.2vw, 26px) 0;
+  padding: clamp(14px, 2vw, 26px) 0 clamp(16px, 2.2vw, 28px);
   border-bottom: 1px solid var(--line);
 }
-.years__y { font-size: clamp(2.1rem, 6.4vw, 4.25rem); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.years__y { font-size: var(--yfs); font-weight: 200; letter-spacing: -0.02em; line-height: 0.82; font-variant-numeric: tabular-nums; transition: font-weight 0.5s var(--ease), letter-spacing 0.5s var(--ease); }
+.years li.is-focus .years__y { font-weight: 900; letter-spacing: -0.04em; }
 .years p { line-height: 1.8; }
 
-.sub { display: flex; align-items: baseline; gap: 0.9rem; font-weight: 400; align-self: start; }
-.sub .display { font-size: clamp(2.2rem, 5vw, 3.75rem); }
-.sub small { font-size: 0.75rem; letter-spacing: 0.12em; color: var(--mute); }
+/* 節の中の小見出し（Books・Textbook・Recent）。極細の語を、左の柱の幅いっぱいに組む */
+.sub { container-type: inline-size; display: grid; gap: 10px; align-self: start; font-weight: 400; }
+.sub .fit { --fw: min(100cqw, 13rem); }
+.sub small { font-size: 0.75rem; letter-spacing: 0.12em; line-height: 1.5; color: var(--mute); }
+@media (min-width: 900px) {
+  .sub .fit { --fw: 100cqw; }
+  .sub small { margin-top: 6px; }
+}
 
-.books { display: grid; gap: var(--gap); }
-.books li { display: flex; flex-direction: column; gap: 12px; padding: clamp(20px, 2.4vw, 32px); background: var(--paper); }
-.books__title { font-size: 1.1875rem; font-weight: 500; line-height: 1.55; }
-.books__title small { display: block; margin-top: 4px; font-size: 0.8125rem; font-weight: 400; color: var(--mute); }
+.books { display: grid; gap: clamp(28px, 4vw, 40px) var(--gap); }
+.books li { display: flex; flex-direction: column; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+.books__title { font-size: clamp(1.1875rem, 1.9vw, 1.625rem); font-weight: 700; line-height: 1.5; letter-spacing: 0.01em; }
+.books__title small { display: block; margin-top: 6px; font-size: 0.8125rem; font-weight: 400; letter-spacing: 0.04em; color: var(--mute); }
 .books__body { font-size: 0.9375rem; line-height: 1.85; flex: 1; }
 @media (min-width: 640px) { .books { grid-template-columns: 1fr 1fr; } }
 
 /* 経歴の節にある、教科書（/startup）への入口 */
-.tbdoor { display: grid; gap: 12px; justify-items: start; max-width: 38em; }
-.tbdoor__title { font-size: clamp(1.375rem, 2.6vw, 2rem); font-weight: 300; letter-spacing: 0.08em; line-height: 1.5; }
+.tbdoor { display: grid; gap: 14px; justify-items: start; max-width: 40em; }
+.tbdoor__title { font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 700; letter-spacing: 0.04em; line-height: 1.4; }
 
 .more {
   display: inline-flex;
   align-items: center;
   align-self: start;
-  gap: 0.5em;
+  gap: 0.9em;
   min-height: 44px;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
   text-decoration: none;
-  border-bottom: 1px solid currentColor;
-  margin-bottom: -6px;
 }
-.more:hover { border-bottom-color: var(--coral); }
-.more span { font-family: var(--mono); }
+.more:hover { text-decoration: underline; text-decoration-color: var(--coral); text-decoration-thickness: 1.5px; text-underline-offset: 0.34em; }
+.more small { font-family: var(--mono); font-size: 0.75rem; font-weight: 400; letter-spacing: 0.04em; color: var(--mute); }
 
-.recent { border-top: 1px solid var(--line); }
+.recent { border-top: 1px solid var(--ink); }
 .recent li {
   display: grid;
   gap: 2px var(--gap);
   padding: 16px 0 18px;
   border-bottom: 1px solid var(--line);
 }
-.recent__title { font-weight: 500; line-height: 1.6; }
+.recent__title { font-weight: 700; line-height: 1.6; }
 .recent__body { font-size: 0.875rem; line-height: 1.75; color: var(--mute); }
 @media (min-width: 640px) { .recent li { grid-template-columns: 7rem 1fr; align-items: baseline; } }
+.more--all { margin-top: 22px; }
 
 /* Contact */
 .who__mail a { font-family: var(--mono); font-size: 0.9375rem; display: inline-flex; align-items: center; min-height: 44px; text-decoration-color: var(--coral); }
-.form { display: grid; grid-template-columns: 1fr; gap: clamp(22px, 3vw, 34px) var(--gap); }
+.form { display: grid; grid-template-columns: 1fr; gap: clamp(22px, 3vw, 36px) var(--gap); }
 @media (min-width: 640px) { .form { grid-template-columns: 1fr 1fr; } .field--wide { grid-column: 1 / -1; } }
 .field { display: grid; gap: 4px; }
 .field label, .field legend { font-family: var(--sans); letter-spacing: 0.1em; }
 .field label small { margin-left: 0.8em; font-size: inherit; opacity: 0.8; }
 .field input, .field textarea {
   width: 100%;
-  padding: 8px 0 10px;
+  padding: 8px 0 12px;
   border: 0;
   border-bottom: 1px solid var(--line);
   border-radius: 0;
   background: none;
   color: inherit;
   font: inherit;
-  font-size: 1rem;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
   line-height: 1.7;
   min-height: 46px;
 }
 .field textarea { resize: vertical; min-height: 9.5em; }
 .field input:focus, .field textarea:focus { outline: none; border-bottom-color: var(--coral); box-shadow: 0 1px 0 var(--coral); }
-.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+/* ご用件。角のある札で、頭に小さな輪。選んだ札は輪が塗られる */
+.chips { display: flex; flex-wrap: wrap; gap: 0; }
 .chips legend { margin-bottom: 10px; }
-.chip { position: relative; cursor: pointer; }
+.chip { position: relative; cursor: pointer; margin: 0 -1px -1px 0; }
 .chip input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .chip span {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0 18px;
+  gap: 0.7em;
+  min-height: 46px;
+  padding: 0 18px 0 14px;
   border: 1px solid var(--line);
-  border-radius: 999px;
   font-size: 0.875rem;
   letter-spacing: 0.04em;
   color: var(--on-dark);
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
-.chip input:checked + span { background: var(--coral); border-color: var(--coral); color: var(--dark); }
+.chip span::before { content: ''; width: 10px; height: 10px; border: 1.5px solid currentColor; border-radius: 50%; transition: background 0.2s, border-color 0.2s; }
+.chip input:checked + span { position: relative; border-color: var(--on-dark); }
+.chip input:checked + span::before { background: var(--coral); border-color: var(--coral); }
 .chip input:focus-visible + span { outline: 2px solid var(--coral); outline-offset: 3px; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 /* 機械でないことの確認（Turnstile）。ふだんは空で、確認が要るときだけ欄が出る */
@@ -415,22 +594,23 @@ body::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5em;
-  width: 124px;
-  height: 124px;
+  gap: 0.6em;
+  width: 132px;
+  height: 132px;
   border: 1.5px solid var(--coral);
   border-radius: 50%;
   background: none;
   color: var(--on-dark);
   font: inherit;
   font-size: 0.9375rem;
+  font-weight: 500;
   letter-spacing: 0.16em;
   cursor: pointer;
   transition: background 0.25s, color 0.25s, scale 0.25s;
 }
-.send i { font-family: var(--mono); letter-spacing: 0; transition: translate 0.25s; }
+.send .arw { width: 15px; height: 15px; transition: translate 0.25s; }
 .send:hover, .send:focus-visible { background: var(--coral); color: var(--dark); }
-.send:hover i { translate: 4px 0; }
+.send:hover .arw { translate: 4px 0; }
 .send:active { scale: 0.96; }
 .send:disabled { opacity: 0.5; cursor: progress; }
 .form__note { flex: 1 1 14em; font-size: 0.8125rem; line-height: 1.8; color: var(--mute); }
@@ -438,57 +618,62 @@ body::after {
 .form__status { min-height: 1.9em; font-size: 0.9375rem; }
 .form__status.is-bad { color: var(--coral); }
 
-/* ───── 次の輪：ブログへ ───── */
-.door { padding: clamp(64px, 10vw, 128px) var(--pad) clamp(48px, 7vw, 88px); }
-.door__link { display: flex; align-items: baseline; gap: 0.12em; margin: 0.1em 0 0 -0.045em; text-decoration: none; font-size: clamp(4.6rem, 25vw, 21rem); }
-.door__link .display { line-height: 1; }
-.door__arrow { font-family: var(--display); font-weight: 200; font-size: 0.5em; line-height: 1; transition: translate 0.35s cubic-bezier(0.2, 0.7, 0.1, 1); }
-.door__link:hover .door__arrow { translate: 0.12em -0.12em; }
-.door__ja { text-wrap: balance; margin-top: clamp(16px, 2vw, 28px); padding-top: 16px; border-top: 1px solid var(--ink); font-size: 0.875rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 24px; }
+/* ───── 扉：大きな語ひとつが、そのまま次の場所への線 ───── */
+.door { position: relative; padding: clamp(40px, 6vw, 88px) var(--pad) clamp(36px, 5vw, 72px); background: var(--bg); }
+.door__head { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+.door__link { container-type: inline-size; display: block; margin-top: clamp(14px, 2.2vw, 32px); text-decoration: none; }
+.door__go { width: clamp(56px, 7vw, 104px); height: clamp(56px, 7vw, 104px); font-size: clamp(18px, 2.2vw, 32px); }
+.door__ja { text-wrap: balance; margin-top: clamp(16px, 2.4vw, 36px); padding-top: 14px; border-top: 1px solid var(--ink); font-size: 0.875rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 24px; }
 .door__ja span { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--mute); }
 
 /* ───── 地 ───── */
-.foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 32px;
-  padding: 12px var(--pad) 28px;
-}
+.foot { position: relative; padding: clamp(28px, 4vw, 56px) var(--pad) 0; background: var(--bg); overflow: hidden; overflow: clip; }
+.foot__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 32px; }
 .foot__links { display: flex; flex-wrap: wrap; gap: 0 clamp(16px, 2.4vw, 32px); margin-inline: -4px; }
 .foot__links a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 4px; font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; text-decoration: none; }
-.foot__links span { margin-left: 0.3em; }
+.foot__links a:hover { text-decoration: underline; text-decoration-color: var(--coral); }
+.foot__links .arw { width: 0.8em; height: 0.8em; margin-left: 0.4em; }
 .foot__copy { font-size: 0.75rem; letter-spacing: 0.06em; color: var(--mute); }
+/* いちばん下に、ロゴを幅いっぱいに。極細の線だけで描いて、裾は画面の底で断ち落とす。指すと墨で塗られる */
+.foot__mark { display: block; margin-top: clamp(20px, 3vw, 44px); margin-bottom: -3.2%; }
+.foot__mark .logo__mark { width: 100%; height: auto; overflow: visible; fill: transparent; stroke: currentColor; stroke-width: 1px; transition: fill 0.5s var(--ease); }
+.foot__mark .logo__mark :is(path, rect) { vector-effect: non-scaling-stroke; }
+.foot__mark:is(:hover, :focus-visible) .logo__mark { fill: currentColor; }
 
-/* ───── 読み物の頁（プライバシーポリシー） ───── */
-.page { padding: clamp(140px, 20vw, 220px) var(--pad) clamp(72px, 10vw, 128px); }
-.page__head { padding-bottom: clamp(20px, 3vw, 40px); border-bottom: 1px solid var(--ink); margin-bottom: clamp(36px, 6vw, 72px); }
-.page__head h1 { font-size: clamp(2.5rem, 10.5vw, 8rem); margin: 0.2em 0 0 -0.04em; }
+/* ───── 読み物の頁（プライバシーポリシー・404） ───── */
+.page { padding: calc(var(--top-h) + clamp(20px, 4vw, 56px)) var(--pad) clamp(72px, 10vw, 128px); }
+.page__head { container-type: inline-size; margin-bottom: clamp(36px, 6vw, 80px); }
+.page__head h1 { margin-top: clamp(14px, 2.2vw, 32px); padding-bottom: clamp(14px, 2.2vw, 32px); border-bottom: 1px solid var(--ink); font-weight: 400; }
 .prose { max-width: 44em; }
 @media (min-width: 900px) { .prose { margin-left: calc((100% + var(--gap)) / 12 * 5); } }
-.prose h2 { margin: 2.6em 0 0.8em; font-size: 1.125rem; font-weight: 500; line-height: 1.6; }
+.prose h2 { margin: 2.6em 0 0.8em; padding-top: 1em; border-top: 1px solid var(--line); font-size: 1.1875rem; font-weight: 700; line-height: 1.6; }
 .prose p { margin-bottom: 1em; }
 .prose ol { margin: 0 0 1.4em; padding-left: 1.6em; list-style: decimal; }
 .prose li { padding-left: 0.3em; margin-bottom: 0.3em; }
 .prose li::marker { font-family: var(--mono); font-size: 0.8125rem; color: var(--mute); }
-.back { display: inline-flex; align-items: center; min-height: 44px; margin-top: 2.5em; font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.06em; }
+.back { display: inline-flex; align-items: center; gap: 0.9em; min-height: 44px; margin-top: 2.5em; font-family: var(--mono); font-size: 0.8125rem; letter-spacing: 0.06em; text-decoration: none; }
 
 /* ───── 活動の記録（全件。/record） ───── */
-.more--all { margin-top: 20px; }
-.more small { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.04em; color: var(--mute); }
-.record { padding-top: clamp(140px, 20vw, 220px); }
+.record { padding-top: calc(var(--top-h) + clamp(20px, 4vw, 56px)); }
 .record__count { grid-area: 1 / 3; font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--mute); }
-.record__lead { max-width: 34em; }
+.record__lead { max-width: 34em; font-size: 1.0625rem; }
 .jump { display: flex; flex-wrap: wrap; gap: 0 clamp(14px, 2vw, 28px); margin: clamp(20px, 3vw, 32px) -4px 0; }
-.jump a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 4px; font-family: var(--display); font-size: 1.375rem; font-weight: 300; text-decoration: none; font-variant-numeric: tabular-nums; }
-.jump a:hover { text-decoration: underline; text-decoration-color: var(--coral); }
-.yr { display: flex; align-items: baseline; gap: 0.9rem; font-weight: 400; align-self: start; scroll-margin-top: 24px; }
-.yr .display { font-size: clamp(3.4rem, 11vw, 8.5rem); letter-spacing: -0.035em; line-height: 0.9; font-variant-numeric: tabular-nums; }
+.jump a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 4px; font-family: var(--display); font-size: 1.375rem; font-weight: 200; text-decoration: none; font-variant-numeric: tabular-nums; transition: font-weight 0.35s var(--ease); }
+.jump a:hover { font-weight: 900; }
+/* 年。数字は極細で待っていて、その年を読んでいるあいだだけ太る（reveal.js が .is-focus を付ける） */
+.yr { container-type: inline-size; display: grid; gap: 10px; align-self: start; font-weight: 400; scroll-margin-top: 24px; }
+.yr .fit { --fw: min(100cqw, 11rem); --sw: 0; margin-left: calc(var(--l9) * var(--fs) * -1); font-weight: calc(100 + 800 * var(--sw)); letter-spacing: calc((-0.008 + (var(--t9) + 0.008) * var(--sw)) * 1em); font-variant-numeric: tabular-nums; }
+.is-focus > .yr .fit { --sw: 1; }
+html:not(.js) .yr .fit { --sw: 1; }
+@media (prefers-reduced-motion: no-preference) { .yr .fit { transition: --sw 0.7s var(--ease); } }
 .yr small { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--mute); }
-.split--year { margin-top: clamp(56px, 8vw, 112px); padding-top: clamp(18px, 2.4vw, 28px); border-top: 1px solid var(--ink); }
-@media (min-width: 900px) { .split--year > .yr { position: sticky; top: 32px; } }
+.split--year { margin-top: clamp(56px, 8vw, 112px); padding-top: clamp(16px, 2vw, 24px); border-top: 1px solid var(--ink); }
+@media (min-width: 900px) {
+  .split--year > .yr { position: sticky; top: 32px; }
+  .yr .fit { --fw: 100cqw; }
+}
 @media (min-width: 640px) { .recent--year li { grid-template-columns: 4.5rem 1fr; } }
+.recent--year { border-top-color: var(--line); }
 
 /* ───── 書いた人（暗い節。教科書とブログの頁の終わりに出る） ───── */
 .abio { display: grid; gap: 1em; align-content: start; }
@@ -496,17 +681,148 @@ body::after {
 .abooks li { border-bottom: 1px solid var(--line); }
 .abooks a { display: grid; grid-template: 'meta go' auto 'title go' auto / 1fr auto; gap: 2px var(--gap); align-items: center; padding: 16px 0 18px; text-decoration: none; }
 .abooks__meta { grid-area: meta; font-size: 0.75rem; letter-spacing: 0.08em; line-height: 1.6; color: var(--mute); }
-.abooks__title { grid-area: title; font-weight: 500; line-height: 1.65; }
-.abooks__go { grid-area: go; font-family: var(--mono); color: var(--coral); }
+.abooks__title { grid-area: title; font-weight: 700; line-height: 1.65; }
+.abooks .go { grid-area: go; }
 .abooks a:hover .abooks__title { text-decoration: underline; text-decoration-color: var(--coral); text-underline-offset: 0.3em; }
 
-/* 天のメニューの「Textbook」は、狭い画面では出さない（五つ並ぶと 320px で溢れる。入口は経歴の節と地にある） */
-.nav__wide { display: none !important; }
-@media (min-width: 640px) { .nav__wide { display: inline-flex !important; } }
+/* ───── 右上の円い押しどころ（レンズ）と、全体のメニュー（Menu.astro） ─────
+   押しどころは白い正円を「差の絶対値」で重ねたもの。明るい地の上では黒く、暗い地の上では白く見え、
+   下を通る字は中だけ色が裏返る。中の二本線は黒（＝下の色がそのまま出る）で、開くと × になる */
+.lens {
+  position: fixed;
+  top: 10px;
+  right: max(8px, calc(var(--pad) - 14px));
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  mix-blend-mode: difference;
+  cursor: pointer;
+  transition: scale 0.5s var(--ease), visibility 0s;
+}
+html:not(.js) .lens { display: none; }
+.lens i { grid-area: 1 / 1; width: 16px; height: 1.5px; background: #000; transition: rotate 0.5s var(--ease), translate 0.5s var(--ease); }
+.lens i:first-child { translate: 0 -3.5px; }
+.lens i:last-child { translate: 0 3.5px; }
+.lens[aria-expanded='true'] i:first-child { translate: 0 0; rotate: 45deg; }
+.lens[aria-expanded='true'] i:last-child { translate: 0 0; rotate: -45deg; }
+.lens:hover { scale: 1.14; }
+.lens:active { scale: 0.94; }
+.lens:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@media (min-width: 900px) {
+  .lens { top: 12px; width: 48px; height: 48px; }
+  /* 広い画面では、頁の頭に並んだメニューが見えているあいだは出さない（reveal.js が html に .scrolled を付ける） */
+  html:not(.scrolled) .lens[aria-expanded='false'] { scale: 0; visibility: hidden; transition: scale 0.4s var(--ease), visibility 0s 0.4s; }
+}
+
+.menu {
+  --ink: var(--on-dark);
+  --mute: var(--mute-dark);
+  --line: var(--line-dark);
+  --on: var(--dark);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--dark);
+  color: var(--on-dark);
+  visibility: hidden;
+  clip-path: circle(0px at var(--mx, 100%) var(--my, 0px));
+  transition: clip-path 0.55s var(--ease), visibility 0s 0.55s;
+}
+.menu.is-open {
+  visibility: visible;
+  clip-path: circle(150vmax at var(--mx, 100%) var(--my, 0px));
+  clip-path: circle(calc(hypot(100vw, 100vh) + 8px) at var(--mx, 100%) var(--my, 0px));
+  transition: clip-path 0.9s var(--ease), visibility 0s;
+}
+html:not(.js) .menu { display: none; }
+html.menu-open { overflow: hidden; }
+.menu__in {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 100%;
+  padding: calc(var(--top-h) + 4px) var(--pad) 10px;
+}
+/* 語の壁の幅（--mw）：使える幅と、使える高さ ÷（語を全部積んだ高さ ÷ 幅 ＝ --mr）の小さいほう */
+.menu__list {
+  --tagh: 28px;
+  --mgap: 12px;
+  --mw: min(100cqw, max(180px, calc((100svh - var(--top-h) - 76px - var(--mn) * (var(--tagh) + var(--mgap))) / var(--mr))));
+  display: grid;
+  gap: var(--mgap);
+}
+.menu__list a { display: block; text-decoration: none; }
+.menu__tag { display: flex; align-items: center; gap: 0.9em; height: var(--tagh); font-size: 0.75rem; letter-spacing: 0.12em; line-height: 1.5; color: var(--mute); }
+.menu__tag b { font-family: var(--mono); font-weight: 500; letter-spacing: 0.08em; color: var(--ink); }
+.menu__tag .go { display: none; }
+.menu__word { --fw: var(--mw); }
+.menu .ring { border-color: var(--coral); }
+.menu__minor { display: flex; flex-wrap: wrap; gap: 0 clamp(16px, 2.4vw, 32px); margin: 14px -4px 0; border-top: 1px solid var(--line); }
+.menu__minor a { display: inline-flex; align-items: center; min-height: 48px; padding-inline: 4px; font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; text-decoration: none; }
+.menu__minor a:hover { text-decoration: underline; text-decoration-color: var(--coral); }
+.menu__minor .arw { width: 0.8em; height: 0.8em; margin-left: 0.4em; }
+@media (min-width: 900px) {
+  /* 広い画面：左に語の壁、右に札（番号・日本語の名前・矢印）。札は語の底にそろえる */
+  .menu__list { --tagh: 0px; --mgap: clamp(10px, 1.6vh, 18px); --mw: min(calc(100cqw - 320px), max(180px, calc((100svh - var(--top-h) - 76px - var(--mn) * var(--mgap)) / var(--mr)))); }
+  .menu__list a { display: grid; grid-template-columns: var(--mw) minmax(0, 1fr); column-gap: clamp(24px, 4vw, 64px); align-items: end; }
+  .menu__word { grid-area: 1 / 1; }
+  .menu__tag { grid-area: 1 / 2; height: auto; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 0.8125rem; transition: border-color 0.3s, color 0.3s; }
+  .menu__tag .go { display: inline-grid; margin-left: auto; color: var(--ink); }
+  .menu__list a:is(:hover, :focus-visible) .menu__tag { border-bottom-color: var(--ink); color: var(--ink); }
+  .menu__list a:is(:hover, :focus-visible) .go { background: var(--ink); border-color: var(--ink); color: var(--on); }
+}
+/* 指す仕組みのある広い画面：語は極細で待っていて、指した語だけが輪を芯に太る。輪もそのときだけコーラル */
+@media (hover: hover) and (min-width: 900px) {
+  /* 並んだ語は左をそろえる（ここでは輪を芯にせず、左から右へ太る） */
+  .menu__word { --sw: 0; margin-left: calc(var(--l9) * var(--fs) * -1); }
+  .menu .ring { border-color: currentColor; transition: border-color 0.3s; }
+  .menu__list a:is(:hover, :focus-visible, [aria-current]) .menu__word { --sw: 1; }
+  .menu__list a:is(:hover, :focus-visible, [aria-current]) .ring { border-color: var(--coral); }
+}
+@media (hover: hover) and (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .menu__word { transition: --sw 0.55s var(--ease); }
+}
+/* 開いたら、語が下から順に入る */
+@media (prefers-reduced-motion: no-preference) {
+  .menu__list li, .menu__minor { opacity: 0; translate: 0 28px; transition: opacity 0.3s, translate 0.3s; }
+  .menu.is-open :is(.menu__list li, .menu__minor) { opacity: 1; translate: none; transition: opacity 0.7s var(--ease) calc(0.12s + var(--k, 0) * 0.05s), translate 0.9s var(--ease) calc(0.12s + var(--k, 0) * 0.05s); }
+  .menu__list li:nth-child(2) { --k: 1; }
+  .menu__list li:nth-child(3) { --k: 2; }
+  .menu__list li:nth-child(4) { --k: 3; }
+  .menu__list li:nth-child(5) { --k: 4; }
+  .menu__list li:nth-child(6) { --k: 5; }
+  .menu__minor { --k: 6; }
+}
+
+/* ───── 頁を渡る：押した場所から、次の頁が円く開く（同じサイトの中だけ。Boot.astro が押した場所を申し送る） ───── */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root) { animation: none; mix-blend-mode: normal; }
+  ::view-transition-new(root) { animation: vt-open 0.85s var(--ease) both; mix-blend-mode: normal; }
+  /* 開いていく円の縁を、コーラルの線がなぞる */
+  .vt .shock { --sx: var(--vx, 50%); --sy: var(--vy, 50%); --sw2: 3px; visibility: visible; animation: vt-rim 0.85s var(--ease) both; }
+}
+@keyframes vt-open {
+  from { clip-path: circle(0px at var(--vx, 50%) var(--vy, 50%)); }
+  to { clip-path: circle(150vmax at var(--vx, 50%) var(--vy, 50%)); }
+}
+@keyframes vt-rim {
+  from { --sr2: 0px; }
+  to { --sr2: 150vmax; }
+}
 
 /* ───── 画面に入ったら出す ───── */
 @media (prefers-reduced-motion: no-preference) {
-  .js .rv { opacity: 0; translate: 0 20px; transition: opacity 0.9s cubic-bezier(0.2, 0.7, 0.1, 1), translate 0.9s cubic-bezier(0.2, 0.7, 0.1, 1); }
+  .js .rv { opacity: 0; translate: 0 20px; transition: opacity 0.9s var(--ease), translate 0.9s var(--ease); }
   .js .rv.in { opacity: 1; translate: none; }
 }
 @media (prefers-reduced-motion: reduce) {

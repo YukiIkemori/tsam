@@ -1,18 +1,44 @@
 ---
 import Base from '../layouts/Base.astro';
-import O from '../components/O.astro';
+import Fit from '../components/Fit.astro';
+import Go from '../components/Go.astro';
 import ContactForm from '../components/ContactForm.astro';
 import { site } from '../data/site';
 import { years, books } from '../data/person';
 import { all, recent } from '../data/activities';
 import { pages as tbPages, NAME as tbName } from '../lib/startup';
 import { inline } from '../scripts/inline';
+import { measure, space, fitVars, THIN } from '../lib/fit';
 
 // 最近の活動は、新しい順に頭の数件（site.recentCount）。全件は /record。
 const ymd = (d: string) => d.replaceAll('-', '.');
 
 // 教科書（/startup）への入口。文は教科書の目次の説明文にあるものだけ。
 const textbook = { name: tbName, lead: 'スタートアップの起業を、問い一つにつき一頁で学べる教科書です。起業の基本、会社設立と資本政策、アイデア、検証、ビジネスモデル、成長、ピッチ、Exitまで。', total: tbPages.length + 2 };
+
+// 表紙の字の壁（Mentor / to the next / round.）の比。書体から実測して CSS に渡す（組み方は global.css の「表紙：字の壁」）。
+//   --ra・--rc … 極太の行の「高さ ÷ 幅」（Mentor、round.）
+//   --rb1・--rb2 … 縦長の画面で四行に組むときの、to the（極細）と next（極太）の「高さ ÷ 幅」
+//   --mnat … 横長の画面で、細い行「to the next」を幅いっぱいに組んだときの「高さ ÷ 幅」
+//   --tb 細い行の天 ／ --lbn・--rbn 細い行の左右の空き ／ --sp 空白の送り（どれも em）
+const TK = -0.011; // 細い行の字間（global.css の --tk と同じ値）
+const mA = measure('Mentor', 900);
+const mB = measure('to the next', THIN, TK);
+const mB1 = measure('to the', THIN);
+const mB2 = measure('next', 900);
+const mC = measure('r|und.', 900);
+const f4 = (n: number) => n.toFixed(4);
+const wall = [
+  `--ra:${f4((mA.top + mA.bot) / mA.ink)}`,
+  `--rb1:${f4((mB1.top + mB1.bot) / mB1.ink)}`,
+  `--rb2:${f4((mB2.top + mB2.bot) / mB2.ink)}`,
+  `--rc:${f4((mC.top + mC.bot) / mC.ink)}`,
+  `--mnat:${f4(mB.top / mB.ink)}`,
+  `--tb:${f4(mB.top)}`,
+  `--lbn:${f4(mB.lsb)}`,
+  `--rbn:${f4(mB.rsb)}`,
+  `--sp:${f4(space(THIN))}`,
+].join(';');
 
 // title は30全角以内、description は90〜125全角。どちらも頁に見えている事実だけで書く。
 const title = '株式会社tsam（ツァム）｜スタートアップ支援・代表 池森裕毅';
@@ -103,25 +129,34 @@ const jsonld = {
 ---
 <Base title={title} description={description} path="/" home jsonld={jsonld}>
 
-  <section class="hero" id="top">
-    <h1 class="display hero__title" aria-label="Mentor to the next round.">
-      <span class="l">Mentor</span> <span class="l">to the</span> <span class="l l--last">next r<O hero />und.</span>
-    </h1>
-    <div class="hero__foot">
-      <p class="hero__lead">株式会社tsamは<wbr>起業家をサポートする<wbr>会社です。</p>
-      <p class="tag hero__place"><b>Tokyo</b><span>Since 2019</span></p>
-      <a class="tag hero__next" href="#company"><b>Round 01</b><span aria-hidden="true">↓</span></a>
+  <section class="hero hero--wall" id="top">
+    <div class="hero__in">
+      <div class="hero__grid" style={wall}>
+        <h1 class="wall" aria-label="Mentor to the next round.">
+          <Fit class="wall__l wall__a" word="Mentor" swell />
+          <span class="wall__l wall__b">
+            <span class="fit wall__b1" style={fitVars('to the', THIN)}>to<i class="wall__rule"> </i>the</span>
+            <Fit class="wall__next" word="next" swell />
+          </span>
+          <Fit class="wall__l wall__c" word="r|und." hero swell />
+        </h1>
+        <div class="hero__foot">
+          <p class="hero__lead">株式会社tsamは<wbr>起業家をサポートする<wbr>会社です。</p>
+          <p class="tag hero__place"><b>Tokyo</b><span>Since 2019</span></p>
+          <a class="tag hero__next" href="#company"><b>Round 01</b><Go dir="s" /></a>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="sec sec--paper" id="company">
+  <section class="sec sec--paper" id="company" data-iris>
     <div class="sec__head">
       <p class="tag sec__round"><b>Round 01</b></p>
       <span class="lamps" aria-hidden="true"><i class="on"></i><i></i><i></i></span>
-      <h2><span class="sec__ja">会社概要</span> <span class="display">C<O />mpany</span></h2>
+      <h2><span class="sec__ja">会社概要</span> <Fit word="C|mpany" swell /></h2>
     </div>
     <div class="company">
-      <p class="statement rv">一人ひとりが自分の力で<wbr>生きていけるように。<br>自分の力で自分が描いた世界を<wbr>創れるように。</p>
+      <p class="statement"><span class="fill">一人ひとりが自分の力で<wbr>生きていけるように。<br>自分の力で自分が描いた世界を<wbr>創れるように。</span></p>
       <div class="company__text rv">
         <p>tsamは起業家をサポートする会社です。起業における成功確率を少しでも高められるように、日々活動をしています。</p>
         <p>一人でも多くの人が夢を叶えられたらなと、私達は思っています。</p>
@@ -137,15 +172,15 @@ const jsonld = {
     </div>
   </section>
 
-  <section class="sec" id="background">
+  <section class="sec" id="background" data-iris>
     <div class="sec__head">
       <p class="tag sec__round"><b>Round 02</b></p>
       <span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span>
-      <h2><span class="sec__ja">代表の経歴</span> <span class="display">Backgr<O />und</span></h2>
+      <h2><span class="sec__ja">代表の経歴</span> <Fit word="Backgr|und" swell /></h2>
     </div>
     <div class="split">
       <div class="who rv">
-        <p class="who__name">池森裕毅<span class="display" lang="en">Yuki Ikemori</span></p>
+        <p class="who__name">池森裕毅<span class="display display--thin" lang="en">Yuki Ikemori</span></p>
         <p class="who__role">代表取締役</p>
         <p>1980年生まれ、千葉県松戸市出身。東京理科大学中退後、起業家として活動開始。</p>
         <p>現在は、信州大学特任教授として教育現場に携わる傍ら、後進の起業家育成に従事。</p>
@@ -158,30 +193,30 @@ const jsonld = {
     </div>
 
     <div class="split split--sub" id="books">
-      <h3 class="sub rv"><span class="display">Books</span><small>著書</small></h3>
+      <h3 class="sub rv"><Fit word="Books" w={THIN} /><small>著書</small></h3>
       <ul class="books">
         {books.map((b) => (
           <li class="rv">
             <p class="books__meta">{b.date.slice(0, 4)} ／ {b.publisher}</p>
             <p class="books__title">{b.title}<small>{b.sub}</small></p>
             <p class="books__body">{b.body}</p>
-            <a class="more" href={b.href} rel="noopener">Amazonで見る<span aria-hidden="true">↗</span></a>
+            <a class="more" href={b.href} rel="noopener">Amazonで見る<Go dir="ne" /></a>
           </li>
         ))}
       </ul>
     </div>
 
     <div class="split split--sub" id="textbook">
-      <h3 class="sub rv"><span class="display">Textbook</span><small>教科書</small></h3>
+      <h3 class="sub rv"><Fit word="Textbook" w={THIN} /><small>教科書</small></h3>
       <div class="tbdoor rv">
         <p class="tbdoor__title">{textbook.name}</p>
         <p>{textbook.lead}</p>
-        <a class="more" href="/startup">教科書を読む<small>全{textbook.total}頁</small><span aria-hidden="true">→</span></a>
+        <a class="more" href="/startup">教科書を読む<small>全{textbook.total}頁</small><Go /></a>
       </div>
     </div>
 
     <div class="split split--sub" id="recent">
-      <h3 class="sub rv"><span class="display">Recent</span><small>最近の活動</small></h3>
+      <h3 class="sub rv"><Fit word="Recent" w={THIN} /><small>最近の活動</small></h3>
       <div>
       <ol class="recent">
         {recent.map((a) => (
@@ -194,16 +229,16 @@ const jsonld = {
           </li>
         ))}
       </ol>
-      <a class="more more--all" href="/record">すべての活動を見る<small>{all.length}件</small><span aria-hidden="true">→</span></a>
+      <a class="more more--all" href="/record">すべての活動を見る<small>{all.length}件</small><Go /></a>
       </div>
     </div>
   </section>
 
-  <section class="sec sec--dark" id="contact">
+  <section class="sec sec--dark" id="contact" data-iris>
     <div class="sec__head">
       <p class="tag sec__round"><b>Round 03</b></p>
       <span class="lamps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>
-      <h2><span class="sec__ja">お問い合わせ</span> <span class="display">C<O />ntact</span></h2>
+      <h2><span class="sec__ja">お問い合わせ</span> <Fit word="C|ntact" swell /></h2>
     </div>
     <div class="split">
       <div class="who rv">
@@ -214,10 +249,10 @@ const jsonld = {
     </div>
   </section>
 
-  <section class="door" id="blog">
-    <p class="tag"><b>Next round</b><span>ブログ</span></p>
+  <section class="door" id="blog" data-iris>
     <a class="door__link" href={site.blog} aria-label="Blog（blog.tsam.co.jp）">
-      <span class="display">Bl<O />g</span><span class="door__arrow" aria-hidden="true">↗</span>
+      <span class="door__head"><span class="tag"><b>Next round</b><span>ブログ</span></span><Go dir="ne" class="door__go" /></span>
+      <Fit word="Bl|g" swell />
     </a>
     <p class="door__ja">スタートアップ概論、投資家視点、ノウハウ、コラム。<span>blog.tsam.co.jp</span></p>
   </section>

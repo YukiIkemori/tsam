@@ -1,0 +1,6 @@
+---
+// 正円の押しどころ（中に矢印）。リンクやボタンの中に置く飾りで、押す相手は親。向きは e（→）・ne（↗）・s（↓）・w（←）。
+import Arrow from './Arrow.astro';
+const { dir = 'e', class: cls } = Astro.props;
+---
+<span class:list={['go', `go--${dir}`, cls]} aria-hidden="true"><Arrow dir={dir} /></span>
