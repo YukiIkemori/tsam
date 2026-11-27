@@ -11,7 +11,8 @@
         { "source": "/blog", "destination": "https://blog.tsam.co.jp/", "type": 301 },
         { "source": "/pages/transaction", "destination": "/", "type": 301 },
         { "source": "/pages/consulting-fees", "destination": "/", "type": 301 },
-        { "source": "/payment/**", "destination": "/", "type": 301 }
+        { "source": "/payment/**", "destination": "/", "type": 301 },
+        { "source": "/images/ogp.jpg", "destination": "/ogp.jpg", "type": 301 }
       ],
       "headers": [
         { "source": "/_astro/**", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
