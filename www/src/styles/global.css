@@ -336,8 +336,7 @@ body::after {
 .books__body { font-size: 0.9375rem; line-height: 1.85; flex: 1; }
 @media (min-width: 640px) { .books { grid-template-columns: 1fr 1fr; } }
 
-/* 経歴の節にある、教科書（/startup）への入口 */
-.tbdoor { display: grid; gap: 12px; justify-items: start; max-width: 38em; }
+/* Textbook（教科書 /startup への入口。お問い合わせとブログのあいだの節） */
 .tbdoor__title { font-size: clamp(1.375rem, 2.6vw, 2rem); font-weight: 300; letter-spacing: 0.08em; line-height: 1.5; }
 
 .more {
@@ -364,6 +363,24 @@ body::after {
 .recent__title { font-weight: 500; line-height: 1.6; }
 .recent__body { font-size: 0.875rem; line-height: 1.75; color: var(--mute); }
 @media (min-width: 640px) { .recent li { grid-template-columns: 7rem 1fr; align-items: baseline; } }
+
+.tbrounds { border-top: 1px solid var(--line); }
+.tbrounds a {
+  display: grid;
+  gap: 2px var(--gap);
+  min-height: 44px;
+  padding: 16px 0 18px;
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+}
+.tbrounds a:hover .tbrounds__ja { text-decoration: underline; text-decoration-color: var(--coral); text-underline-offset: 0.3em; }
+.tbrounds__n { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--mute); }
+.tbrounds__ja { font-weight: 500; line-height: 1.6; }
+.tbrounds__who { font-size: 0.875rem; line-height: 1.75; color: var(--mute); }
+@media (min-width: 640px) {
+  .tbrounds a { grid-template-columns: 7rem 1fr; align-items: baseline; }
+  .tbrounds__who { grid-column: 2; }
+}
 
 /* Contact */
 .who__mail a { font-family: var(--mono); font-size: 0.9375rem; display: inline-flex; align-items: center; min-height: 44px; text-decoration-color: var(--coral); }

@@ -44,8 +44,8 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - **大きな見出しを足すときは、o のある英単語にする。**輪の席が要るので
 - 輪の寸法は Jost の o の実測値（`global.css` の `.ring`）。**大きな欧文の書体を替えたら測り直す**
 - コーラル `#d98577` は、明るい地の上では文字に使わない（コントラスト 2.6）。輪・線・灯りと、暗い地の上だけ
-- 節の札は「Round 01 / 02 / 03」、最後のブログへの扉が「Next round」。キャッチは「Mentor to the next round.」で確定
-- 天のメニューの「Textbook」は 640px 未満では出さない（五つ並ぶと 320px で溢れる）。狭い画面の入口は、経歴の節の「Textbook」と地のリンク
+- 節の札は「Round 01 / 02 / 03 / 04」（Company・Background・Contact・Textbook。天のメニューと同じ並び。2026-11-28 オーナー「Textbook は Background に入れるやつじゃない」で独立させた）、最後のブログへの扉が「Next round」。キャッチは「Mentor to the next round.」で確定
+- 天のメニューの「Textbook」は 640px 未満では出さない（五つ並ぶと 320px で溢れる）。狭い画面の入口は、表紙の Textbook の節と地のリンク
 
 ## 文章の決まりごと
 
