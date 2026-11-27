@@ -5,7 +5,7 @@ import ContactForm from '../components/ContactForm.astro';
 import { site } from '../data/site';
 import { years, books } from '../data/person';
 import { all, recent } from '../data/activities';
-import { pages as tbPages, NAME as tbName, rounds as tbRounds, no } from '../lib/startup';
+import { pages as tbPages, NAME as tbName } from '../lib/startup';
 import { inline } from '../scripts/inline';
 
 // 最近の活動は、新しい順に頭の数件（site.recentCount）。全件は /record。
@@ -212,22 +212,11 @@ const jsonld = {
       <h2><span class="sec__ja">教科書</span> <span class="display">Textb<O />ok</span></h2>
     </div>
     <div class="split">
-      <div class="who rv">
-        <p class="tbdoor__title">{textbook.name}</p>
+      <p class="tbdoor__title rv">{textbook.name}</p>
+      <div class="tbdoor rv">
         <p>{textbook.lead}</p>
         <a class="more" href="/startup">教科書を読む<small>全{textbook.total}頁</small><span aria-hidden="true">→</span></a>
       </div>
-      <ol class="tbrounds">
-        {tbRounds.map((r) => (
-          <li class="rv">
-            <a href={`/startup#r${r.n}`}>
-              <span class="tbrounds__n">Round {no(r.n)}</span>
-              <span class="tbrounds__ja">{r.ja}</span>
-              <span class="tbrounds__who">{r.who}</span>
-            </a>
-          </li>
-        ))}
-      </ol>
     </div>
   </section>
 
