@@ -14,12 +14,13 @@ export const GET: APIRoute = () => {
 - 著書: ${books.map((b) => `${b.title}（${b.publisher}、${b.year}年${b.role === '監修' ? '。監修' : ''}）`).join('、')}
 - 記事一覧: ${site.url}/archives
 - RSS: ${site.url}/feed.xml
+- 全記事の本文: ${site.url}/llms-full.txt
 
 ${usedTags
   .map(
     (t) => `## ${t.ja}
 
-${t.posts.map((p) => `- [${p.title}](${abs(p.url)})（${p.date.slice(0, 10)}）`).join('\n')}`,
+${t.posts.map((p) => `- [${p.title}](${abs(p.url)})（${p.date.slice(0, 10)}）: ${p.description}`).join('\n')}`,
   )
   .join('\n\n')}
 ${
