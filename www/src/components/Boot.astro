@@ -23,8 +23,10 @@
       d.style.setProperty('--vx', p[0] + 'px');
       d.style.setProperty('--vy', p[1] + 'px');
     }
-    d.classList.add('vt');
-    e.viewTransition.finished.then(function () { d.classList.remove('vt'); }, function () { d.classList.remove('vt'); });
+    // 開いていく円の縁をなぞる線（.shock）は、円が動きはじめるのと同時に走らせる
+    var off = function () { d.classList.remove('vt'); };
+    e.viewTransition.ready.then(function () { d.classList.add('vt'); }, off);
+    e.viewTransition.finished.then(off, off);
   });
 })();
 </script>

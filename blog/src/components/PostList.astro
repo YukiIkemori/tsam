@@ -1,11 +1,15 @@
 ---
 // 記事の一覧（日付・題・タグ）。行ぜんたいが一つのリンク。excerpt を付けると書き出しも出す。
+// 行の右端の矢印は、指したときに右へ滑る（広い画面だけ。狭い画面では出さない）。
+import Arrow from '@www/components/Arrow.astro';
 import type { Post } from '../lib/posts';
-interface Props { items: Post[]; excerpt?: boolean; short?: boolean; tag?: boolean }
-const { items, excerpt = false, short = false, tag = true } = Astro.props;
+//   short … 年ごとの一覧（日付は月日だけ。題は細め）
+//   wide  … 表紙の一覧（広い画面では、題と書き出しを横に並べる）
+interface Props { items: Post[]; excerpt?: boolean; short?: boolean; wide?: boolean; tag?: boolean }
+const { items, excerpt = false, short = false, wide = false, tag = true } = Astro.props;
 const md = (p: Post) => `${Number(p.date.slice(5, 7))}.${p.date.slice(8, 10)}`;
 ---
-<ol class:list={['plist', { 'plist--short': short }]}>
+<ol class:list={['plist', { 'plist--short': short, 'plist--wide': wide, 'plist--notag': !tag }]}>
   {items.map((p) => (
     <li>
       <a href={p.url}>
@@ -15,6 +19,7 @@ const md = (p: Post) => `${Number(p.date.slice(5, 7))}.${p.date.slice(8, 10)}`;
           {excerpt && <span class="plist__body">{p.description}</span>}
         </span>
         {tag && <span class="plist__tag">{p.tags.map((t) => t.ja).join('・')}</span>}
+        <span class="plist__go" aria-hidden="true"><Arrow /></span>
       </a>
     </li>
   ))}

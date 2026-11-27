@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
-import O from '@www/components/O.astro';
-import Word from '../../components/Word.astro';
+import Fit from '@www/components/Fit.astro';
+import Go from '@www/components/Go.astro';
+import { THIN } from '@www/lib/fit';
 import PostList from '../../components/PostList.astro';
 import Author from '../../components/Author.astro';
 import { site, author, org } from '../../data/site';
@@ -9,8 +10,9 @@ import { posts, related, neighbors, abs } from '../../lib/posts';
 import { textbookName } from '../../lib/textbook';
 
 // 記事の頁。URL は /archives/<番号>（旧ブログのまま）。
-// 頭の大きな字はタグの英語の名前で、その o に輪が座る。読み進めるあいだ輪は左端の線を降りていき、
-// 読み終わりの「Next round」（関連記事）の o に着く。
+// 頭の大きな字はタグの英語の名前（左の柱の幅いっぱい）で、その o に輪が座る。読み進めるあいだ輪は左端の線を降りていき、
+// 読み終わりの「Next round」（関連記事）の o に着くと、そこから関連記事の節が円く開く。
+// 関連記事の一本目（いちばん近い記事）を「次に読む一本」として大きく出し、残りを一覧にする。
 export function getStaticPaths() {
   return posts.map((p) => ({ params: { id: String(p.id) }, props: { p } }));
 }
@@ -18,6 +20,7 @@ const { p } = Astro.props;
 const tag = p.tags[0];
 const word = tag?.en ?? 'Bl|g';
 const next = related(p);
+const [lead, ...others] = next;
 const { newer, older } = neighbors(p);
 const updated = p.modified.slice(0, 10) > p.date.slice(0, 10) ? p.modified.slice(0, 10).replaceAll('-', '.') : null;
 const url = abs(p.url);
@@ -97,14 +100,16 @@ const jsonld = {
 <Base title={p.title} description={p.description} path={p.url} jsonld={jsonld} image={p.og} article={{ published: p.date, modified: p.modified, section: tag?.ja }} tweet={p.hasTweet}>
   <article class="post">
     <header class="post__head">
-      <p class="post__word display fit" style={`--n:${word.length - 1}`}>
-        {tag ? <a href={`/tags/${tag.slug}`} aria-label={`${tag.ja}の記事一覧`}><Word word={word} /></a> : <a href="/" aria-label="tsam.blog トップへ"><Word word={word} /></a>}
-      </p>
       <div class="post__bar">
         <p class="tag"><b><time datetime={p.date}>{p.ymd}</time></b>{p.tags.map((t) => <span>{t.ja}</span>)}</p>
         {updated && <p class="tag post__upd"><time datetime={p.modified}>{updated}</time><span>更新</span></p>}
       </div>
-      <h1 class="post__title">{p.title}</h1>
+      <div class="split post__top">
+        <p class="post__word">
+          {tag ? <a href={`/tags/${tag.slug}`} aria-label={`${tag.ja}の記事一覧`}><Fit word={word} swell /></a> : <a href="/" aria-label="tsam.blog トップへ"><Fit word={word} swell /></a>}
+        </p>
+        <h1 class="post__title">{p.title}</h1>
+      </div>
     </header>
 
     <div class="split post__cols">
@@ -114,7 +119,7 @@ const jsonld = {
           <details class="toc">
             <summary>目次</summary>
             <ol>
-              {p.toc.map((h) => <li><a href={`#${h.id}`}>{h.text}</a></li>)}
+              {p.toc.map((h) => <li><a href={`#${h.id}`}><span>{h.text}</span></a></li>)}
             </ol>
           </details>
         )}
@@ -125,28 +130,41 @@ const jsonld = {
           <aside class="post__book">
             <p class="tag"><b>Textbook</b><span>教科書</span></p>
             <p>この話題は、教科書『{textbookName}』にまとめてあります。</p>
-            <a class="more" href={p.textbook.url}>{p.textbook.title}<span aria-hidden="true">↗</span></a>
+            <a class="more" href={p.textbook.url}>{p.textbook.title}<Go dir="ne" /></a>
           </aside>
         )}
         <p class="post__end">
-          <a class="more" href={share} rel="noopener">X で共有する<span aria-hidden="true">↗</span></a>
-          {tag && <a class="more" href={`/tags/${tag.slug}`}>「{tag.ja}」の記事<small>{posts.filter((q) => q.tags.includes(tag)).length}本</small><span aria-hidden="true">→</span></a>}
+          <a class="more" href={share} rel="noopener">X で共有する<Go dir="ne" /></a>
+          {tag && <a class="more" href={`/tags/${tag.slug}`}>「{tag.ja}」の記事<small>{posts.filter((q) => q.tags.includes(tag)).length}本</small><Go /></a>}
         </p>
         <nav class="post__end post__seq" aria-label="前後の記事">
-          {older && <a class="more" href={older.url} rel="prev"><small>ひとつ前の記事</small>{older.title}<span aria-hidden="true">←</span></a>}
-          {newer && <a class="more" href={newer.url} rel="next"><small>ひとつ後の記事</small>{newer.title}<span aria-hidden="true">→</span></a>}
+          {older && <a class="more" href={older.url} rel="prev"><Go dir="w" /><small>ひとつ前の記事</small><span class="post__seq-t">{older.title}</span></a>}
+          {newer && <a class="more" href={newer.url} rel="next"><small>ひとつ後の記事</small><span class="post__seq-t">{newer.title}</span><Go /></a>}
         </nav>
       </div>
     </div>
   </article>
 
-  <section class="sec sec--paper" id="next">
+  <section class="sec sec--paper" id="next" data-iris>
     <div class="sec__head">
       <p class="tag sec__round"><b>Related</b></p>
-      <h2><span class="sec__ja">関連記事</span> <span class="display">Next r<O />und</span></h2>
+      <h2><span class="sec__ja">関連記事</span> <Fit word="Next r|und" swell /></h2>
     </div>
-    <PostList items={next} excerpt />
-    <a class="more more--all" href="/archives">すべての記事を見る<small>{posts.length}本</small><span aria-hidden="true">→</span></a>
+    {lead && (
+      <a class="bnext" href={lead.url}>
+        <span class="tag"><b><time datetime={lead.date.slice(0, 10)}>{lead.ymd}</time></b><span>{lead.tags.map((t) => t.ja).join('・')}</span></span>
+        <span class="bnext__title">{lead.title}</span>
+        <span class="bnext__body">{lead.description}</span>
+        <Go class="bnext__go" />
+      </a>
+    )}
+    <div class="split bnext__rel">
+      <p class="sub rv" aria-hidden="true"><Fit word="More" w={THIN} /></p>
+      <div>
+        <PostList items={others} excerpt />
+        <a class="more more--all" href="/archives">すべての記事を見る<small>{posts.length}本</small><Go /></a>
+      </div>
+    </div>
   </section>
 
   <Author />

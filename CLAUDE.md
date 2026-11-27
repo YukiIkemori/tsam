@@ -14,7 +14,7 @@
   Firebase のサイトは公式とは別（`firebase.json` の `tsam-blog`）
 - `www/startup/` が教科書「スタートアップのはじめ方」の原稿（40頁）。tsam.co.jp/startup に出る。2026-11-26 に off-notes.com/startup/ から引っ越した。
   off-notes 側の 301 も同じ日に入れた（`docs/startup-move.md`）。下の「教科書」を読むこと
-- ブログは意匠の部品（輪の o・ロゴ・`global.css`・`ring.js`・書いた人の節）を `www/src` からそのまま読む（`@www/…`）。
+- ブログは意匠の部品（輪の o・幅いっぱいの字・矢印・メニュー・ロゴ・`global.css`・`ring.js`・`reveal.js`・書いた人の節）を `www/src` からそのまま読む（`@www/…`）。
   **www の部品を直すとブログも変わる。**直したら両方を見る。ブログだけの部品は `blog/src/styles/blog.css`
 
 ## 検証
@@ -25,7 +25,7 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 
 公式は、上の preview を立てたまま `node tools/verify.cjs`（全44頁を 390px と 1440px で開いて、横スクロール・画像切れ・リンク切れ・
 見出しの段飛ばし・小さい字・小さい押し場所・SNS 用の画像の有無を数える。10秒ほど）。
-ブログは `cd blog && npm install && npm run build && npx astro preview --port 4322` のあと `node tools/verify.cjs`（全175頁。30秒ほど）。
+ブログは `cd blog && npm install && npm run build && npx astro preview --port 4322` のあと `node tools/verify.cjs`（全215頁。40秒ほど）。
 **www の部品を直したら両方流す。**
 
 `firebase.json` の URL の動き（`/startup`・`/startup/<slug>`・`/archives/<番号>`・末尾スラッシュ・301）は、
@@ -37,15 +37,33 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 ## 意匠の決まりごと
 
 オーナーの好み（2026-11-25）：「超イケてる尖った感じ」。地は白か薄いグレー。差し色はくぐもったコーラルピンクか、濃いグレー。
+2026-11-28 に意匠だけを組み直した（オーナー「すごく尖らせてよいからね。色味はあまり変えずに」）。**色と文章と URL は変えていない。**
 
-- **装置は一つ。見出しの「o」が輪になっている。**キャッチ「Mentor to the next round.」の round ＝輪。
-  Company / Background / Contact / Blog にも o があるので、コーラルの輪が一つだけ、読んでいる見出しの o に座り、
-  スクロールすると左端の細い線を伝って次の見出しの o へ渡る（`src/components/O.astro`、`src/scripts/ring.js`）
-- **大きな見出しを足すときは、o のある英単語にする。**輪の席が要るので
-- 輪の寸法は Jost の o の実測値（`global.css` の `.ring`）。**大きな欧文の書体を替えたら測り直す**
+**「尖 × 円」。尖ったもの（極細の線、Jost の尖った頂点）と、円いもの（輪、正円）だけで組む。角の丸い箱は使わない。**
+
+- **大きな欧文は、どれも置き場所の幅ちょうどに組む**（`src/components/Fit.astro`）。字の大きさ＝置き場所の幅 ÷ その語の墨の幅で、CSS だけで決まる。
+  短い語ほど大きく、長い語ほど小さい。墨の幅は build のときに書体のファイルから測る（`src/lib/fit.ts`。fontkit）。
+  置き場所は、いちばん近い `container-type: inline-size` の箱。語を足すときは `<Fit word="C|mpany" />` と書くだけ（「|」が輪になる o）
+- **極太（900）と極細（200）を隣り合わせる。**中間の太さは大きな字に使わない
+- **見出しの「o」が輪**（`src/components/O.astro`）。キャッチ「Mentor to the next round.」の round ＝輪。コーラルの輪は一つだけで、読んでいる見出しの o に座り、
+  スクロールすると左端の細い線を伝って次の見出しの o へ渡る（`src/scripts/ring.js`）。**大きな見出しを足すときは、o のある英単語にする。**輪の席が要るので
+- **輪が着くと、そこから次の節が円く開く**（節に `data-iris` を付ける）。開く円の縁を、コーラルの線（`.shock`）がなぞって画面の外へ抜ける。
+  輪が着いた見出しは、輪の位置を動かさずに極細から極太へ太る（`<Fit swell />`）。見出しへ直に来たとき（`/#contact`）と読み込み直しでは、動かさずに開いた形で出す
+- **いま見ているものが太る。**年表の年・年ごとの一覧の年・ブログのタグの壁は、画面のまんなかに来た行だけ太い（`data-focus`。`src/scripts/reveal.js` が `.is-focus` を付ける）。
+  指す仕組みのある広い画面では、指した語が太る（メニュー、タグの壁）
+- **押すものは正円**（矢印の押しどころ `src/components/Go.astro`、送信、右上のメニュー）。矢印は SVG（`Arrow.astro`。Jost に矢印の字が無いため、字では出さない）
+- **全体のメニュー**（`src/components/Menu.astro`。公式とブログで同じ部品）：右上の円い押しどころ（レンズ。`mix-blend-mode: difference` で、地が明るくても暗くても見える）を押すと、
+  そこから暗い面が円く開いて、行き先の語が幅いっぱいに並ぶ。**天に並べるメニューは 900px 以上だけ。**それより狭い画面はレンズが入口（2026-11-25 の「Textbook は 640px 未満では出さない」はこれで要らなくなった）
+- **頁を渡るとき、押した場所から次の頁が円く開く**（同じサイトの中だけ。`src/components/Boot.astro` と `global.css` の `@view-transition`。対応していないブラウザでは普通に切り替わる）
+- 地のいちばん下に、ロゴを幅いっぱいに線だけで描く（`.foot__mark`）
+- 輪の寸法は Jost の o の実測値（`global.css` の `.ring`、`fit.ts` の `RING`）。**大きな欧文の書体を替えたら測り直す**（`fit.ts` の実測も変わる）
 - コーラル `#d98577` は、明るい地の上では文字に使わない（コントラスト 2.6）。輪・線・灯りと、暗い地の上だけ
 - 節の札は「Round 01 / 02 / 03」、最後のブログへの扉が「Next round」。キャッチは「Mentor to the next round.」で確定
-- 天のメニューの「Textbook」は 640px 未満では出さない（五つ並ぶと 320px で溢れる）。狭い画面の入口は、経歴の節の「Textbook」と地のリンク
+- 表紙のキャッチは「字の壁」（`index.astro` の `.wall`）。縦長の画面では四行、横長では三行で、どの画面でも一枚に収まるように、幅と高さの小さいほうから大きさを決めている。
+  **キャッチの語を変えたら、`index.astro` の頭の実測（行ごとの比）が変わる**（自動で測り直すが、行の割り方は見直す）
+- **動きは、無くても読める形の上に足す。**JS が動かないとき・動きを控える設定のときは、節は最初から開き、見出しは太いまま、輪は全部の席に座っている
+  （`global.css` は `html.js` のときだけ動きの下ごしらえをする。4秒たっても本体の JS が動かなければ `Boot.astro` が `js` を外す）
+- 検査（`tools/verify.cjs`）は、輪のまわりを回る線（`.orbit`、`.rings`）のはみ出しだけは数えない（`main` が横を切り落としている）
 
 ## 文章の決まりごと
 
@@ -79,8 +97,9 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - build が止めるもの：title 30全角超、description 90〜125全角の外、行き先の無い内部リンク、ほかの頁の本文・関連から線が来ていない頁
 - **頁を足すとき**：`pages/NN-slug.md` を足し、近い頁の `related` と本文から線を張り、用語があれば `glossary.md` に足す。
   目次の title の「全40頁」を直す。`cd www && node tools/og-startup.cjs` で SNS 用の画像を作る（流し忘れると `tools/verify.cjs` が出す）
-- 意匠：区分は八つで、札は「Round 01〜08」。頁の頭に区分の語（Intro・Money・Concept・Proof・Model・Growth・Story・Beyond。`startup.ts` の `rounds`）が大きく出て、
-  その o に輪が座る。右肩の八つの灯りが、いま何ラウンド目か。読み終わりは「Next round」（次の頁）。**全頁同じ顔**（教科書なので変えない）。部品は `www/src/styles/startup.css`
+- 意匠：区分は八つで、札は「Round 01〜08」。頁の頭に区分の語（Intro・Money・Concept・Proof・Model・Growth・Story・Beyond。`startup.ts` の `rounds`）が左の柱の幅いっぱいに出て、
+  その o に輪が座る。右肩の八つの灯りが、いま何ラウンド目か。読み終わりは「Next round」（次の頁。輪が着くと円く開く）。目次では、輪が着いた区分の語から順に太っていく。
+  **全頁同じ顔**（教科書なので変えない）。部品は `www/src/styles/startup.css`
 - 構造化データは Article・BreadcrumbList と、**頁に見えている「よくある質問」をそのまま写した FAQPage**（原稿の `?? 問い`）。用語集は DefinedTermSet。
   公式の表紙で FAQPage を使わないのは「本文に無い問いを作ることになる」からで、ここは本文にある問いなので使っている
 - **旧ブログとの関係**（オーナー了承 2026-11-26）：旧ブログの3本（3676 バイアウト・3638 Why you・4960 ディスラプト）は検索の主役なので、教科書はその語を狙わず、
@@ -106,8 +125,10 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
   Featured articles（完全食COMPの記事をトップで特別に見せる枠。オーナー同日「特別扱いはしなくてよい」。記事そのものは残っている）、
   Community（Stoked capital）と講演実績一例（公式サイトで載せないと決めたものに合わせた）、
   `/?tags=…&p=…` の絞り込み（いまは `/tags/<名前>` と `/archives`）。**コメントと Featured の枠は戻さない**
-- ブログの記事の頁では、輪が頭の見出し（タグの英語の名前）から読み終わりの「Next round」（関連記事）まで左端の線を降りる。
-  公式のキャッチ「Mentor to the next round.」に合わせて、関連記事の見出しを「Next round」にしてある
+- ブログの記事の頁では、輪が頭の見出し（タグの英語の名前。左の柱の幅いっぱい）から読み終わりの「Next round」（関連記事）まで左端の線を降り、着くと関連記事の節が円く開く。
+  公式のキャッチ「Mentor to the next round.」に合わせて、関連記事の見出しを「Next round」にしてある。関連記事の一本目（いちばん近い記事）だけ大きく出す
+- ブログの表紙は「Blog」の四字の壁（横長の画面では一行、縦長では「Bl / og」の二行。`blog.css` の `.bwall`）。その下に最新の記事、タグの壁（`.twall`。タグの英語の名前を幅いっぱいに組み、
+  見ている語だけ太る）。記事一覧（`/archives`）の頭は「Log」。**タグを足すときは `en` を o のある語にする**（壁の一行になり、タグの頁の頭にもなる）
 - sitemap（記事の図も image:image で載る）・RSS（`/feed.xml`。本文つき）・`/llms.txt`（各記事の要約つき）・`/llms-full.txt`（全記事の本文）は `posts/` の実体から作る。手で書かない
 - 記事の構造化データ（`archives/[id].astro`）は BlogPosting・WebPage・BreadcrumbList。字数（wordCount）・読む時間・目次（hasPart）・書いた人の経歴と SNS（sameAs）・関連記事（relatedLink）を入れてある。記事の終わりに時系列の前後の記事への線がある
 - ブログ共通の OGカード：`cd blog && node tools/og.cjs`

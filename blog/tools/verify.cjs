@@ -61,7 +61,7 @@ const sample = new Set(['/', '/archives', '/tags/columns', '/tags/contribution',
         const out = { over: document.documentElement.scrollWidth - innerWidth, wide: [], small: [], tap: [], skip: [], links: [] };
         for (const el of document.querySelectorAll('main *, header *, footer *')) {
           const cs = getComputedStyle(el); const rc = el.getBoundingClientRect();
-          if (rc.width && rc.right > innerWidth + 1 && !el.closest('.rings') && cs.position !== 'fixed' && !el.closest('table, pre')) out.wide.push(el.className || el.tagName);
+          if (rc.width && rc.right > innerWidth + 1 && !el.closest('.rings, .orbit') && cs.position !== 'fixed' && !el.closest('table, pre')) out.wide.push(el.className || el.tagName);
           if ([...el.childNodes].some((x) => x.nodeType === 3 && x.textContent.trim()) && parseFloat(cs.fontSize) < 11.5 && !el.classList.contains('vh')) out.small.push((el.className || el.tagName) + ':' + cs.fontSize);
         }
         for (const el of document.querySelectorAll('a, button, summary')) {

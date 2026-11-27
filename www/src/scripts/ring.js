@@ -12,8 +12,8 @@
 //     閉じているのは輪が着く前だけで、どこまでスクロールしたかだけで決まる（戻せば閉じる）
 //   ・太り … 席のある見出し（.swell）は、輪が着いたときに極細から太る（輪の位置は動かない。global.css）
 //
-// 動きを減らす設定（prefers-reduced-motion）のときは何もしない。全部の o がコーラルのまま止まっていて、節は最初から開いている。
-// JS が動かないときも同じ見た目になる（global.css）。
+// 動きを減らす設定（prefers-reduced-motion）のときと、席が一つしか無い頁では渡らない。全部の席がコーラルのまま
+// 止まっていて（.is-on を付けておく）、節は最初から開いている。JS が動かないときも同じ見た目になる（global.css）。
 
 // 書体が届いて、最初の一枚が描かれたあと（太っていく動きを、ここから始める）
 export const ready = new Promise((done) => {
@@ -258,4 +258,7 @@ if (slots.length > 1 && traveler && !still.matches) {
     seated = -2;
     update();
   });
+} else {
+  // 渡らないとき（席が一つだけの頁・動きを控える設定）：どの席も、輪が着いた形で止めておく
+  slots.forEach((s) => s.classList.add('is-on'));
 }

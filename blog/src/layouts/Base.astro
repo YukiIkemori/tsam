@@ -3,6 +3,9 @@ import '@fontsource-variable/jost/wght.css';
 import '@www/styles/global.css';
 import '../styles/blog.css';
 import Logo from '@www/components/Logo.astro';
+import Arrow from '@www/components/Arrow.astro';
+import Boot from '@www/components/Boot.astro';
+import Menu from '@www/components/Menu.astro';
 import { site } from '../data/site';
 import jost from '@fontsource-variable/jost/files/jost-latin-wght-normal.woff2?url';
 
@@ -20,6 +23,20 @@ const { title, description = site.description, path = '/', jsonld, noindex = fal
 const canonical = new URL(path, site.url).href;
 const og = new URL(image ?? '/ogp.jpg', site.url).href;
 const year = new Date().getFullYear();
+
+// 全体のメニュー（右上の円い押しどころから開く。部品は公式サイトと同じ Menu.astro）。語は頁の大きな見出しと同じもの
+const menu = [
+  { word: 'Bl|g', ja: '表紙', href: '/', current: path === '/' },
+  { word: 'L|g', ja: '記事一覧', href: '/archives', current: path === '/archives' },
+  { word: 'T|pics', ja: 'タグ', href: '/#topics', current: path.startsWith('/tags/') },
+  { word: 'C|mpany', ja: '公式サイト', href: `${site.home}/`, out: true },
+  { word: 'C|ntact', ja: 'お問い合わせ', href: `${site.home}/#contact`, out: true },
+];
+const minor = [
+  { label: 'RSS', href: '/feed.xml' },
+  { label: 'Privacy Policy', href: `${site.home}/pages/privacy-policy`, out: true },
+  ...site.social.map((s) => ({ ...s, out: true })),
+];
 ---
 <!doctype html>
 <html lang="ja">
@@ -56,9 +73,9 @@ const year = new Date().getFullYear();
 <link rel="alternate" type="text/plain" href="/llms-full.txt" title="llms-full.txt">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap">
 {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
-<script is:inline>document.documentElement.classList.add('js');</script>
+<Boot />
 {site.ga && <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${site.ga}`}></script>}
 {site.ga && <script is:inline define:vars={{ ga: site.ga }}>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',ga);</script>}
 </head>
@@ -68,23 +85,27 @@ const year = new Date().getFullYear();
   <nav class="nav" aria-label="メニュー">
     <a href="/archives">Articles</a>
     <a href="/#topics">Topics</a>
-    <a href={`${site.home}/`}>tsam<span aria-hidden="true">↗</span></a>
+    <a href={`${site.home}/`}>tsam<Arrow dir="ne" /></a>
   </nav>
 </header>
+<Menu items={menu} minor={minor} />
 <main>
   <slot />
 </main>
 <footer class="foot">
-  <a class="logo" href="/" aria-label="tsam.blog トップへ"><Logo /><span class="logo__sub" aria-hidden="true">.blog</span></a>
-  <ul class="foot__links">
-    {site.social.map((s) => <li><a href={s.href} rel="noopener">{s.label}<span aria-hidden="true">↗</span></a></li>)}
-    <li><a href="/feed.xml">RSS</a></li>
-    <li><a href={`${site.home}/#contact`}>Contact<span aria-hidden="true">↗</span></a></li>
-    <li><a href={`${site.home}/pages/privacy-policy`}>Privacy Policy<span aria-hidden="true">↗</span></a></li>
-  </ul>
-  <p class="foot__copy">© {year} 株式会社tsam</p>
+  <div class="foot__row">
+    <ul class="foot__links">
+      {site.social.map((s) => <li><a href={s.href} rel="noopener">{s.label}<Arrow dir="ne" /></a></li>)}
+      <li><a href="/feed.xml">RSS</a></li>
+      <li><a href={`${site.home}/#contact`}>Contact<Arrow dir="ne" /></a></li>
+      <li><a href={`${site.home}/pages/privacy-policy`}>Privacy Policy<Arrow dir="ne" /></a></li>
+    </ul>
+    <p class="foot__copy">© {year} 株式会社tsam</p>
+  </div>
+  <a class="foot__mark" href="/" aria-label="tsam.blog トップへ"><Logo /></a>
 </footer>
 <i class="traveler" aria-hidden="true"></i>
+<i class="shock" aria-hidden="true"></i>
 <script>
   import '@www/scripts/ring.js';
   import '@www/scripts/reveal.js';

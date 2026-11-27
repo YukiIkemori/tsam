@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
-import Word from '../../components/Word.astro';
+import Fit from '@www/components/Fit.astro';
+import Go from '@www/components/Go.astro';
 import PostList from '../../components/PostList.astro';
 import { site, org } from '../../data/site';
 import { usedTags, byYear, abs } from '../../lib/posts';
@@ -45,24 +46,25 @@ const jsonld = {
 ---
 <Base title={title} description={description} path={path} jsonld={jsonld}>
   <article class="sec record">
-    <header class="sec__head">
+    <header class="sec__head bhead">
       <p class="tag sec__round"><b>Topic</b></p>
       <span class="record__count">{t.posts.length}本</span>
-      <h1><span class="sec__ja">{t.ja}</span> <span class="display fit" style={`--n:${t.en.length - 1}`}><Word word={t.en} /></span></h1>
+      <h1><span class="sec__ja">{t.ja}</span> <Fit word={t.en} swell /></h1>
+      <div class="bhead__nav">
+        <nav class="tagnav" aria-label="ほかのタグ">
+          <a href="/archives">すべて</a>
+          {usedTags.map((u) => <a href={`/tags/${u.slug}`} aria-current={u.slug === t.slug ? 'page' : undefined}>{u.ja}<small>{u.posts.length}</small></a>)}
+        </nav>
+      </div>
     </header>
 
-    <nav class="tagnav" aria-label="ほかのタグ">
-      <a href="/archives">すべて</a>
-      {usedTags.map((u) => <a href={`/tags/${u.slug}`} aria-current={u.slug === t.slug ? 'page' : undefined}>{u.ja}<small>{u.posts.length}</small></a>)}
-    </nav>
-
     {years.map((y) => (
-      <section class="split split--year">
-        <h2 class="yr"><span class="display">{y.year}</span><small>{y.items.length}本</small></h2>
+      <section class="split split--year" data-focus>
+        <h2 class="yr"><Fit word={String(y.year)} class="yr__n" /><small>{y.items.length}本</small></h2>
         <div class="rv"><PostList items={y.items} short tag={false} /></div>
       </section>
     ))}
 
-    <a class="back" href="/">← Blog</a>
+    <a class="back" href="/"><Go dir="w" />Blog</a>
   </article>
 </Base>
