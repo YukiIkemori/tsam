@@ -157,3 +157,9 @@
 .post__book .more { height: auto; padding-block: 9px; font-size: 1rem; font-weight: 500; line-height: 1.6; text-align: left; }
 
 .post__end { display: flex; flex-wrap: wrap; gap: 8px 36px; max-width: 46rem; margin-top: 3.6em; padding-top: 1.2em; border-top: 1px solid var(--ink); }
+
+/* 時系列の前後の記事。題が長いので二段に積む（小さな札＋題）。狭い画面では縦に並ぶ */
+.post__seq { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 14px 36px; margin-top: 1.6em; border-top: 1px solid var(--line); }
+.post__seq .more { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 2px 0.8em; padding-block: 8px; font-size: 0.9375rem; line-height: 1.6; }
+.post__seq .more small { grid-column: 1 / -1; }
+.post__seq .more[rel="next"] { grid-column: -2; }

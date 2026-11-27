@@ -1,6 +1,6 @@
-// /feed.xml — RSS。新しい順に30本。本文は載せず、書き出しとリンクだけ。
+// /feed.xml — RSS。新しい順に30本。要約（description）と本文（content:encoded。画像とリンクは絶対 URL に直す）。
 import type { APIRoute } from 'astro';
-import { site } from '../data/site';
+import { site, author, org } from '../data/site';
 import { posts, abs } from '../lib/posts';
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -13,9 +13,11 @@ export const GET: APIRoute = () => {
 <pubDate>${new Date(p.date).toUTCString()}</pubDate>
 ${p.tags.map((t) => `<category>${esc(t.ja)}</category>`).join('')}
 <description>${esc(p.description)}</description>
+<dc:creator>${esc(p.byOrg ? org.name : author.name)}</dc:creator>
+<content:encoded><![CDATA[${p.html.replace(/(src|href)="\/(?!\/)/g, `$1="${site.url}/`).replaceAll(']]>', ']]]]><![CDATA[>')}]]></content:encoded>
 </item>`);
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
 <channel>
 <title>${esc(site.name)}</title>
 <link>${site.url}/</link>

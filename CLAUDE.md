@@ -93,8 +93,8 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
 - **記事を足す**：`blog/posts/<番号>.md` を一つ足す。番号はいちばん大きい番号の次（いま最大は 5641）。番号がそのまま URL になる。
   頭の欄は `title`・`date`（`2026-12-01T09:00:00+09:00` の形）・`tags`（`[columns]` のように一つ）。本文は Markdown。
   画像は `blog/public/images/<番号>/` に置いて `![説明](/images/<番号>/01.webp)`。
-  任意の欄：`modified`（直した日）、`description`（検索結果の説明文。無ければ書き出しから自動）、`image`（SNS 用の画像）、
-  `related`（関連記事の番号。無ければ同じタグの新しい記事）、`author: org`（寄稿。書き手を代表本人にしない）、
+  任意の欄：`modified`（直した日）、`description`（検索結果の説明文。**60〜125字で、本文の要点を本文にある事実だけで書く**。外れると build が止まる。全205本は 2026-11-27 に手で書いた。無ければ書き出しから自動）、`image`（SNS 用の画像）、
+  `related`（関連記事の番号。頭の2本まで使い、残りは本文の近い記事で自動に埋まる。どこからも関連記事の線が来ない記事が出ないように、自動で入れ替えもする。`src/lib/posts.ts`）、`author: org`（寄稿。書き手を代表本人にしない）、
   `textbook`（同じ主題の教科書の頁の slug。記事の終わりに、その頁への線が一本出る）
 - **旧ブログから移した記事**（`blog/posts/<番号>.html`）は本文が HTML のまま。**文章には触れていない。**
   移すときに変えたことは `blog/tools/import_wp.py` の頭に書いてある（画像の置き直し、記事どうしのリンク、見出しを h2 始まりに、など）。
@@ -108,7 +108,8 @@ cd www && npm install && npm run build && npx astro preview   # http://localhost
   `/?tags=…&p=…` の絞り込み（いまは `/tags/<名前>` と `/archives`）。**コメントと Featured の枠は戻さない**
 - ブログの記事の頁では、輪が頭の見出し（タグの英語の名前）から読み終わりの「Next round」（関連記事）まで左端の線を降りる。
   公式のキャッチ「Mentor to the next round.」に合わせて、関連記事の見出しを「Next round」にしてある
-- sitemap・RSS（`/feed.xml`）・`/llms.txt` は `posts/` の実体から作る。手で書かない
+- sitemap（記事の図も image:image で載る）・RSS（`/feed.xml`。本文つき）・`/llms.txt`（各記事の要約つき）・`/llms-full.txt`（全記事の本文）は `posts/` の実体から作る。手で書かない
+- 記事の構造化データ（`archives/[id].astro`）は BlogPosting・WebPage・BreadcrumbList。字数（wordCount）・読む時間・目次（hasPart）・書いた人の経歴と SNS（sameAs）・関連記事（relatedLink）を入れてある。記事の終わりに時系列の前後の記事への線がある
 - ブログ共通の OGカード：`cd blog && node tools/og.cjs`
 
 ## SEO / AIO の決まりごと（オーナー 2026-11-25「バリバリ効かせて」）
